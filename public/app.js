@@ -89,9 +89,118 @@ function setMessage(text, type = "") {
   message.className = `message${type ? ` ${type}` : ""}`;
 }
 
+const FIELD_LABELS = {
+  lastName: "Фамилия",
+  firstName: "Имя",
+  phone: "Номер телефона",
+  age: "Возраст",
+  city: "Город проживания",
+  telegramUsername: "Username в Telegram",
+  profession: "Профессия",
+  desiredSchedule: "Желаемый график",
+  desiredSalary: "Желаемый заработок"
+};
+
+function clearFieldErrors() {
+  form?.querySelectorAll(".field-error").forEach((item) => item.remove());
+  form?.querySelectorAll(".field.field-invalid, .profession-section.field-invalid").forEach((item) => item.classList.remove("field-invalid"));
+  form?.querySelectorAll("input, textarea, select").forEach((field) => {
+    field.removeAttribute("aria-invalid");
+    field.removeAttribute("aria-describedby");
+    field.setCustomValidity("");
+  });
+}
+
+function showFieldError(name, text) {
+  const field = form?.elements.namedItem(name);
+  if (!field) return;
+
+  let container = field.closest(".field");
+  if (name === "profession") container = document.querySelector(".profession-section");
+  if (!container) container = field.parentElement;
+
+  container.classList.add("field-invalid");
+  field.setAttribute("aria-invalid", "true");
+
+  const errorId = `error-${name}`;
+  const error = document.createElement("small");
+  error.className = "field-error";
+  error.id = errorId;
+  error.textContent = text;
+  container.appendChild(error);
+  field.setAttribute("aria-describedby", errorId);
+
+  if (typeof field.setCustomValidity === "function" && name !== "profession") {
+    field.setCustomValidity(text);
+  }
+}
+
+function validateCandidateForm() {
+  clearFieldErrors();
+  const errors = {};
+  const add = (name, text) => { if (!errors[name]) errors[name] = text; };
+
+  const lastName = fieldValue("lastName");
+  const firstName = fieldValue("firstName");
+  const phone = fieldValue("phone");
+  const age = fieldValue("age");
+  const city = fieldValue("city");
+  const telegram = fieldValue("telegramUsername");
+  const profession = fieldValue("profession");
+  const schedule = fieldValue("desiredSchedule");
+  const salary = fieldValue("desiredSalary");
+
+  if (!lastName) add("lastName", "Укажите фамилию.");
+  else if (!/^[\p{L}][\p{L}\s'’\-]{1,79}$/u.test(lastName)) add("lastName", "Введите корректную фамилию: только буквы, пробелы или дефисы.");
+
+  if (!firstName) add("firstName", "Укажите имя.");
+  else if (!/^[\p{L}][\p{L}\s'’\-]{1,79}$/u.test(firstName)) add("firstName", "Введите корректное имя: только буквы, пробелы или дефисы.");
+
+  if (!phone) add("phone", "Укажите номер телефона.");
+  else if (!/^\+7 \([0-9]{3}\) [0-9]{3}-[0-9]{2}-[0-9]{2}$/.test(phone)) add("phone", "Введите номер в формате +7 (999) 123-45-67.");
+
+  const numericAge = Number(age);
+  if (!age) add("age", "Укажите возраст.");
+  else if (!Number.isInteger(numericAge) || numericAge < 14 || numericAge > 100) add("age", "Возраст должен быть от 14 до 100 лет.");
+
+  if (!city) add("city", "Укажите город проживания.");
+  else if (!/^[\p{L}\d][\p{L}\d\s'’.,()\-]{1,119}$/u.test(city)) add("city", "Введите корректное название города.");
+
+  if (!telegram) add("telegramUsername", "Укажите Username в Telegram.");
+  else if (!/^@?[A-Za-z0-9_]{1,63}$/.test(telegram)) add("telegramUsername", "Введите корректный Username в Telegram, например @username.");
+
+  if (!profession) add("profession", "Выберите одну из предложенных профессий.");
+
+  if (!schedule) add("desiredSchedule", "Выберите желаемый график.");
+  else if (!["Полный день", "Неполный день", "Сменный график", "Удалённая работа", "Гибкий график"].includes(schedule)) add("desiredSchedule", "Выберите график из списка.");
+
+  const numericSalary = Number(salary);
+  if (!salary) add("desiredSalary", "Укажите желаемый заработок.");
+  else if (!Number.isInteger(numericSalary) || numericSalary < 0 || numericSalary > 100000000) add("desiredSalary", "Укажите корректную сумму от 0 до 100 000 000 ₽.");
+
+  Object.entries(errors).forEach(([name, text]) => showFieldError(name, text));
+  return errors;
+}
+
+function showServerFieldErrors(fieldErrors) {
+  clearFieldErrors();
+  if (!fieldErrors || typeof fieldErrors !== "object") return;
+  Object.entries(fieldErrors).forEach(([name, text]) => {
+    if (FIELD_LABELS[name] && typeof text === "string") showFieldError(name, text);
+  });
+}
+
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!form.reportValidity()) return;
+
+  const clientErrors = validateCandidateForm();
+  if (Object.keys(clientErrors).length) {
+    const firstError = form.querySelector(".field-invalid");
+    firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setMessage("Пожалуйста, исправьте отмеченные поля.", "error");
+    return;
+  }
+
   const profession = fieldValue("profession");
   if (!profession) {
     setMessage("Выберите профессию перед отправкой анкеты.", "error");
@@ -110,7 +219,11 @@ form?.addEventListener("submit", async (event) => {
       body: JSON.stringify(data)
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || "Не удалось отправить анкету.");
+    if (!response.ok) {
+      const submissionError = new Error(result.error || "Не удалось отправить анкету.");
+      submissionError.fieldErrors = result.fieldErrors || {};
+      throw submissionError;
+    }
 
     form.reset();
     if (startedAt) startedAt.value = String(Date.now());
@@ -125,6 +238,9 @@ form?.addEventListener("submit", async (event) => {
     }
     window.scrollTo({ top: document.querySelector(".form-card").offsetTop - 30, behavior: "smooth" });
   } catch (error) {
+    if (error?.fieldErrors) showServerFieldErrors(error.fieldErrors);
+    const firstError = form.querySelector(".field-invalid");
+    firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
     setMessage(error.message, "error");
   } finally {
     if (submitButton) submitButton.disabled = false;

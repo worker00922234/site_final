@@ -445,3 +445,27 @@ button, .primary-button, .login-button, .refresh-button, .export-button,
 
 /* v1.8.0 — candidate contact + private chat */
 .contact-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px}.telegram-button{display:inline-flex;align-items:center;gap:10px;padding:13px 17px;border-radius:11px;background:#229ed9;color:#fff;text-decoration:none;font-weight:800;font-size:13px;box-shadow:0 8px 20px rgba(34,158,217,.18)}.telegram-button:hover{transform:translateY(-1px)}.contact-actions .secondary-button{margin-top:0}.candidate-chat{margin:22px auto 0;max-width:680px;text-align:left;border:1px solid #e2e5ec;border-radius:16px;background:#fbfcff;overflow:hidden}.candidate-chat-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e7ed;background:#fff}.candidate-chat-head b{display:block;font-size:14px;color:#1559a6}.candidate-chat-head span:not(.chat-live-dot){display:block;margin-top:3px;font-size:10px;color:#7b8190}.chat-live-dot{width:9px;height:9px;border-radius:50%;background:#54bd70;box-shadow:0 0 0 4px #eaf8ed}.candidate-chat-messages{height:260px;overflow-y:auto;padding:14px;background:#f5f7fb}.chat-message{display:flex;flex-direction:column;align-items:flex-start;margin-bottom:10px}.chat-message.mine{align-items:flex-end}.chat-bubble{max-width:78%;padding:9px 12px;border-radius:13px 13px 13px 4px;background:#fff;border:1px solid #e2e5ec;color:#303542;font-size:12px;line-height:1.5;box-shadow:0 2px 7px rgba(20,25,35,.04)}.chat-message.mine .chat-bubble{border-radius:13px 13px 4px 13px;background:#e6f2ff;border-color:#c9e1fa}.chat-message time{font-size:9px;color:#9298a5;margin:3px 5px 0}.chat-empty{height:100%;display:grid;place-items:center;text-align:center;color:#858b99;font-size:11px}.candidate-chat-form{display:flex;gap:8px;padding:11px;border-top:1px solid #e4e7ed;background:#fff}.candidate-chat-form textarea{flex:1;resize:none;border:1px solid #dfe2ea;border-radius:10px;padding:10px;font:inherit;font-size:12px;outline:none}.candidate-chat-form textarea:focus{border-color:#8db9e6;box-shadow:0 0 0 3px #eaf4ff}.candidate-chat-form button{align-self:stretch;border:0;border-radius:10px;background:#1760ae;color:#fff;padding:0 14px;font-weight:800;font-size:11px;cursor:pointer}.candidate-chat-form button:disabled{opacity:.6}.candidate-chat-note{margin:0;padding:0 12px 11px;font-size:9px;color:#8b91a0}@media(max-width:600px){.contact-actions{flex-direction:column}.contact-actions>*{width:100%;box-sizing:border-box;justify-content:center}.candidate-chat-form{flex-direction:column}.candidate-chat-form button{min-height:42px}.chat-bubble{max-width:88%}}
+
+
+/* Precise validation feedback for candidates */
+.field.field-invalid input,
+.field.field-invalid textarea,
+.field.field-invalid select {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.08);
+}
+
+.profession-section.field-invalid .profession-list {
+  border: 1px solid #dc3545;
+  border-radius: 16px;
+  padding: 4px;
+}
+
+.field-error {
+  display: block;
+  margin-top: 7px;
+  color: #c62828;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+}

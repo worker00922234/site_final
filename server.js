@@ -325,52 +325,66 @@ app.post("/api/applications", applicationLimiter, requireSameOrigin, (req, res) 
     return res.status(429).json({ error: "Пожалуйста, откройте анкету заново и проверьте данные перед отправкой." });
   }
 
-  const required = { lastName, firstName, phone, age, city, telegramUsername, profession, desiredSchedule, desiredSalary };
-  if (Object.values(required).some((value) => String(value ?? "").trim() === "")) {
-    return res.status(400).json({ error: "Заполните все обязательные поля." });
-  }
-
   const clean = (value, max) => String(value ?? "").trim().replace(/\s+/g, " ").slice(0, max);
   const cleanLong = (value, max) => String(value ?? "").trim().slice(0, max);
   const normalizedPhone = clean(phone, 32);
-  const phoneDigits = normalizedPhone.replace(/\D/g, "");
-  if (!/^(?:7|8)9\d{9}$/.test(phoneDigits)) {
-    return res.status(400).json({ error: "Укажите корректный российский номер телефона." });
-  }
-
-  const numericAge = Number(age);
-  const numericSalary = Number(desiredSalary);
-  if (!Number.isInteger(numericAge) || numericAge < 14 || numericAge > 100) {
-    return res.status(400).json({ error: "Укажите корректный возраст от 14 до 100 лет." });
-  }
-  if (!Number.isInteger(numericSalary) || numericSalary < 0 || numericSalary > 100000000) {
-    return res.status(400).json({ error: "Укажите корректную сумму желаемого заработка." });
-  }
 
   const fields = {
-    lastName: clean(lastName, 80), firstName: clean(firstName, 80),
-    city: clean(city, 120), telegramUsername: clean(telegramUsername, 64),
+    lastName: clean(lastName, 80),
+    firstName: clean(firstName, 80),
+    city: clean(city, 120),
+    telegramUsername: clean(telegramUsername, 64),
     previousActivity: cleanLong(previousActivity, 3000),
-    education: clean(education, 500), workExperience: cleanLong(workExperience, 5000),
+    education: clean(education, 500),
+    workExperience: cleanLong(workExperience, 5000),
     profession: clean(profession, 120)
   };
 
-  const professions = ["Специалист по проверке товаров", "Агент по работе с объектами", "Администратор объектов", "Менеджер по работе с клиентами", "Агент по поиску объектов", "Специалист выездной проверки", "Тайный покупатель"];
-  if (!professions.includes(fields.profession)) {
-    return res.status(400).json({ error: "Выберите профессию из списка." });
-  }
-
-  const schedules = ["Полный день", "Неполный день", "Сменный график", "Удалённая работа", "Гибкий график"];
-  if (!schedules.includes(String(desiredSchedule).trim())) {
-    return res.status(400).json({ error: "Выберите корректный график работы." });
-  }
+  const fieldErrors = {};
+  const addFieldError = (name, text) => {
+    if (!fieldErrors[name]) fieldErrors[name] = text;
+  };
 
   const namePattern = /^[\p{L}][\p{L}\s'’\-]{1,79}$/u;
   const cityPattern = /^[\p{L}\d][\p{L}\d\s'’.,()\-]{1,119}$/u;
   const telegramPattern = /^@?[A-Za-z0-9_]{1,63}$/;
-  if (!namePattern.test(fields.lastName) || !namePattern.test(fields.firstName) || !cityPattern.test(fields.city) ||
-      !telegramPattern.test(fields.telegramUsername)) {
-    return res.status(400).json({ error: "Проверьте имя, город и описание опыта — данные должны быть заполнены корректно." });
+
+  if (!fields.lastName) addFieldError("lastName", "Укажите фамилию.");
+  else if (!namePattern.test(fields.lastName)) addFieldError("lastName", "Введите корректную фамилию: только буквы, пробелы или дефисы.");
+
+  if (!fields.firstName) addFieldError("firstName", "Укажите имя.");
+  else if (!namePattern.test(fields.firstName)) addFieldError("firstName", "Введите корректное имя: только буквы, пробелы или дефисы.");
+
+  const phoneDigits = normalizedPhone.replace(/\D/g, "");
+  if (!normalizedPhone) addFieldError("phone", "Укажите номер телефона.");
+  else if (!/^(?:7|8)9\d{9}$/.test(phoneDigits)) addFieldError("phone", "Укажите корректный российский номер телефона.");
+
+  const numericAge = Number(age);
+  if (String(age ?? "").trim() === "") addFieldError("age", "Укажите возраст.");
+  else if (!Number.isInteger(numericAge) || numericAge < 14 || numericAge > 100) addFieldError("age", "Возраст должен быть от 14 до 100 лет.");
+
+  if (!fields.city) addFieldError("city", "Укажите город проживания.");
+  else if (!cityPattern.test(fields.city)) addFieldError("city", "Введите корректное название города.");
+
+  if (!fields.telegramUsername) addFieldError("telegramUsername", "Укажите Username в Telegram.");
+  else if (!telegramPattern.test(fields.telegramUsername)) addFieldError("telegramUsername", "Введите корректный Username в Telegram, например @username.");
+
+  const professions = ["Специалист по проверке товаров", "Агент по работе с объектами", "Администратор объектов", "Менеджер по работе с клиентами", "Агент по поиску объектов", "Специалист выездной проверки", "Тайный покупатель"];
+  if (!professions.includes(fields.profession)) addFieldError("profession", "Выберите одну из предложенных профессий.");
+
+  const schedules = ["Полный день", "Неполный день", "Сменный график", "Удалённая работа", "Гибкий график"];
+  const normalizedSchedule = clean(desiredSchedule, 64);
+  if (!schedules.includes(normalizedSchedule)) addFieldError("desiredSchedule", "Выберите график из списка.");
+
+  const numericSalary = Number(desiredSalary);
+  if (String(desiredSalary ?? "").trim() === "") addFieldError("desiredSalary", "Укажите желаемый заработок.");
+  else if (!Number.isInteger(numericSalary) || numericSalary < 0 || numericSalary > 100000000) addFieldError("desiredSalary", "Укажите корректную сумму от 0 до 100 000 000 ₽.");
+
+  if (Object.keys(fieldErrors).length) {
+    return res.status(400).json({
+      error: "Пожалуйста, исправьте отмеченные поля.",
+      fieldErrors
+    });
   }
 
   const clientKey = req.ip || "unknown";
@@ -389,7 +403,7 @@ app.post("/api/applications", applicationLimiter, requireSameOrigin, (req, res) 
   `).run(
     fields.lastName, fields.firstName, "", normalizedPhone, fields.telegramUsername,
     numericAge, fields.city, fields.previousActivity,
-    fields.education, fields.workExperience, fields.profession, String(desiredSchedule).trim(), numericSalary,
+    fields.education, fields.workExperience, fields.profession, normalizedSchedule, numericSalary,
     chatToken
   );
 
