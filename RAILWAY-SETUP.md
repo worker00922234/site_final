@@ -51,3 +51,7 @@ Add to the Telegram bot service:
 - `TELEGRAM_CHAT_REPLY_SECRET` — exactly the same secret
 
 Reply to the candidate notification in Telegram; the bot sends that reply to the candidate website chat.
+
+
+### Ответ кандидату из Telegram
+В уведомлении Telegram появилась кнопка «↩️ Ответить». После нажатия бот попросит написать ответ, а затем отправит его в чат кандидата на сайте.

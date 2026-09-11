@@ -434,7 +434,7 @@ async function notifyAdminViaTelegram({ applicationId, candidateName, message })
     `👤 <b>${escapeTelegramHtml(safeName)}</b>`,
     `📝 ${escapeTelegramHtml(safeMessage)}`,
     `📌 Анкета №${applicationId}`,
-    "↩️ Ответить кандидату: используйте функцию «Ответить» на это сообщение в Telegram."
+    "💬 Нажмите «↩️ Ответить», чтобы ответить кандидату прямо из Telegram."
   ];
 
   const payload = {
@@ -444,11 +444,11 @@ async function notifyAdminViaTelegram({ applicationId, candidateName, message })
     disable_web_page_preview: true
   };
 
+  const replyButtons = [[{ text: "↩️ Ответить", callback_data: `candidate_reply:${applicationId}` }]];
   if (PUBLIC_SITE_URL) {
-    payload.reply_markup = {
-      inline_keyboard: [[{ text: "Открыть админ-панель", url: `${PUBLIC_SITE_URL}/admin-dashboard.html?application=${applicationId}` }]]
-    };
+    replyButtons.push([{ text: "Открыть админ-панель", url: `${PUBLIC_SITE_URL}/admin-dashboard.html?application=${applicationId}` }]);
   }
+  payload.reply_markup = { inline_keyboard: replyButtons };
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
