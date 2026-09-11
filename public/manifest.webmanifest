@@ -1,0 +1,9 @@
+{
+  "name": "Анкета соискателя",
+  "short_name": "Анкета",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#d92f3d",
+  "lang": "ru"
+}

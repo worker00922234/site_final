@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151823">
+  <title>Вход — Админ-панель</title>
+  <link rel="stylesheet" href="/admin.css?v=1.7.10">
+  <link rel="manifest" href="/manifest.webmanifest">
+</head>
+<body>
+  <div class="login-screen">
+    <div class="login-glow"></div>
+    <div class="login-card">
+      <a class="login-brand" href="/" aria-label="Центр Занятости Населения"><img src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения"></a>
+      <div class="login-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 10V7.5a5 5 0 0 1 10 0V10M6 10h12v9H6v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="14" r="1" fill="currentColor"/></svg></div>
+      <p class="login-kicker">Закрытый раздел</p>
+      <h1>Вход для администратора</h1>
+      <p class="login-subtitle">Управляйте входящими анкетами в одном месте.</p>
+      <form method="post" action="/api/login">
+        <label class="field"><span>Пароль</span><input name="password" type="password" autocomplete="current-password" placeholder="Введите пароль" required autofocus></label>
+        <button class="login-button" type="submit">Войти <span>→</span></button>
+      </form>
+      <a class="back-link" href="/">← Вернуться к анкете</a>
+    </div>
+  </div>
+</body>
+</html>

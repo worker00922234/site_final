@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151823">
+  <title>Админ-панель — Анкеты</title>
+  <link rel="stylesheet" href="/admin.css?v=1.7.10">
+  <link rel="manifest" href="/manifest.webmanifest">
+</head>
+<body>
+  <div id="adminApp">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="admin-brand" href="/admin" aria-label="Центр Занятости Населения"><img src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения"></a>
+        <div class="topbar-actions"><a href="/">Открыть анкету <span>↗</span></a><button id="logout" type="button">Выйти</button></div>
+      </div>
+    </header>
+
+    <main class="admin">
+      <section class="admin-heading"><div><p class="admin-kicker">Работа с кандидатами</p><h1>Все анкеты</h1><p>Просматривайте отклики, оценивайте кандидатов и обновляйте статус.</p></div><div class="heading-actions"><a class="export-button" href="/api/applications/export.csv">↓ Экспорт CSV</a><button id="refresh" class="refresh-button" type="button"><span>↻</span> Обновить</button></div></section>
+
+      <section class="stats" aria-label="Статистика">
+        <div class="stat-card stat-total"><span class="stat-label">Всего анкет</span><b id="total">0</b><span class="stat-caption">за всё время</span></div>
+        <div class="stat-card"><span class="stat-label">Новые</span><b id="newCount">0</b><span class="stat-caption">требуют внимания</span></div>
+        <div class="stat-card"><span class="stat-label">В работе</span><b id="reviewCount">0</b><span class="stat-caption">рассматриваются</span></div>
+        <div class="stat-card"><span class="stat-label">Приглашены</span><b id="invitedCount">0</b><span class="stat-caption">следующий этап</span></div><div class="stat-card stat-rejected"><span class="stat-label">Отказы</span><b id="rejectedCount">0</b><span class="stat-caption">завершённые отклики</span></div>
+      </section>
+
+      <section class="toolbar">
+        <div class="search-box"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="search" placeholder="Поиск: имя, город, телефон, опыт" aria-label="Поиск"></div>
+        <select id="statusFilter" aria-label="Фильтр по статусу"><option value="">Все статусы</option><option value="new">Новые</option><option value="review">Рассматриваются</option><option value="invited">Приглашены</option><option value="rejected">Отказы</option></select>
+        <select id="cityFilter" aria-label="Фильтр по городу"><option value="">Все города</option></select>
+        <select id="scheduleFilter" aria-label="Фильтр по графику"><option value="">Любой график</option><option>Полный день</option><option>Неполный день</option><option>Сменный график</option><option>Удалённая работа</option><option>Гибкий график</option></select>
+        <div class="salary-filter"><input id="salaryMin" type="number" min="0" step="1000" placeholder="ЗП от" aria-label="Зарплата от"><span>—</span><input id="salaryMax" type="number" min="0" step="1000" placeholder="до" aria-label="Зарплата до"></div>
+        <select id="sortFilter" aria-label="Сортировка"><option value="newest">Сначала новые</option><option value="oldest">Сначала старые</option><option value="salaryHigh">Зарплата: по убыванию</option><option value="salaryLow">Зарплата: по возрастанию</option></select><button id="clearFilters" class="clear-filters" type="button">Сбросить фильтры</button>
+      </section>
+
+      <section class="table-card">
+        <div class="table-top"><div><strong>Список кандидатов</strong><span id="resultCount">0 анкет</span><span id="filterState" class="filter-state"></span></div><div class="selection-actions"><span id="selectedCount">0 выбрано</span><button id="exportSelected" type="button" class="selection-export" disabled>↓ Экспорт выбранных</button></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th class="check-col"><input id="selectAll" type="checkbox" aria-label="Выбрать все"></th><th>Кандидат</th><th>Город</th><th>Телефон</th><th>Возраст</th><th>График</th><th>Заработок</th><th>Статус</th><th>Действия</th></tr></thead>
+            <tbody id="applications"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination" hidden><button id="prevPage" type="button">← Назад</button><span id="pageInfo">Страница 1</span><button id="nextPage" type="button">Вперёд →</button></div><div id="empty" class="empty" hidden><div class="empty-icon">⌁</div><strong>Анкет не найдено</strong><span>Попробуйте изменить поиск или фильтр.</span></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="details">
+    <div class="dialog-head"><div><p class="admin-kicker">Карточка кандидата</p><h2>Анкета</h2></div><button class="close" id="close" type="button" aria-label="Закрыть">×</button></div>
+    <div id="detailsBody"></div>
+  </dialog>
+  <script src="/admin.js?v=1.7.0"></script>
+</body>
+</html>

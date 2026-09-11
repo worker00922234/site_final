@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>Анкета соискателя</title>
+  <link rel="stylesheet" href="/styles.css?v=1.7.9">
+  <link rel="manifest" href="/manifest.webmanifest">
+<style id="site-critical-css">
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root { --bg:#f7f8fc; --surface:#fff; --ink:#1557a6; --profession-green:#16834d; --muted:#737887; --line:#e6e8ee; --accent:#d92f3d; --accent-dark:#b92330; --accent-soft:#fff0f2; --success:#14804a; --danger:#c53c50; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { margin:0; background:radial-gradient(circle at 75% -10%, #e9e7ff 0, rgba(233,231,255,0) 34%), var(--bg); color:var(--ink); font-family:'Manrope',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+button,input,textarea,select { font:inherit; }
+a { color:inherit; }
+.page-shell { min-height:100vh; }
+.site-header { width:min(1160px,calc(100% - 40px)); margin:auto; height:82px; display:flex; align-items:center; justify-content:space-between; }
+.brand { display:inline-flex; align-items:center; text-decoration:none; }
+.brand-logo { display:block; width:245px; height:auto; max-height:58px; object-fit:contain; object-position:left center; }
+.admin-link { text-decoration:none; color:var(--muted); font-size:13px; font-weight:700; transition:.2s; }
+.admin-link:hover { color:var(--ink); }
+.main-content { width:min(900px,calc(100% - 40px)); margin:0 auto; padding:72px 0 30px; }
+.hero { max-width:760px; margin-bottom:45px; }
+.eyebrow { display:flex; align-items:center; gap:9px; color:var(--accent); text-transform:uppercase; letter-spacing:.14em; font-size:11px; font-weight:800; margin-bottom:19px; }
+.eyebrow span { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 5px var(--accent-soft); }
+h1 { margin:0; font-size:clamp(40px,6vw,67px); line-height:1.02; letter-spacing:-.055em; font-weight:800; }
+h1 em { color:var(--accent); font-style:normal; }
+.hero > p { max-width:620px; margin:25px 0 0; color:var(--muted); font-size:16px; line-height:1.75; }
+.form-card { background:rgba(255,255,255,.94); border:1px solid rgba(225,227,236,.9); border-radius:28px; padding:40px; box-shadow:0 22px 70px rgba(30,34,60,.08); }
+.form-intro { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:27px; }
+.form-intro.compact { margin-top:0; margin-bottom:25px; }
+.section-kicker { margin:0 0 7px; color:var(--accent); font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+h2 { margin:0; font-size:22px; letter-spacing:-.03em; }
+.required-note { margin:0; color:var(--muted); font-size:12px; }
+.required-note span,.field b { color:var(--accent); }
+.field-grid { display:grid; gap:18px; }
+.two-columns { grid-template-columns:1fr 1fr; }
+.field-wide { min-width:0; }
+.field { display:grid; gap:9px; }
+.field > span { font-size:13px; font-weight:800; }
+input,textarea,select { width:100%; border:1px solid var(--line); border-radius:13px; outline:none; background:#fbfbfd; color:var(--ink); padding:14px 15px; transition:border-color .18s,box-shadow .18s,background .18s,transform .18s; }
+input::placeholder,textarea::placeholder { color:#a1a5b1; }
+input:hover,textarea:hover,select:hover { border-color:#cfd2dc; }
+input:focus,textarea:focus,select:focus { background:#fff; border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
+textarea { resize:vertical; min-height:112px; line-height:1.55; }
+select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23737887' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:42px; }
+.input-suffix { position:relative; }
+.input-suffix input { padding-right:86px; }
+.input-suffix span { position:absolute; top:50%; right:15px; transform:translateY(-50%); color:var(--muted); font-size:12px; font-weight:700; pointer-events:none; }
+.divider { height:1px; background:var(--line); margin:38px 0 31px; }
+.submit-row { display:flex; justify-content:space-between; align-items:center; gap:24px; margin-top:30px; }
+.privacy-hint { display:flex; align-items:flex-start; gap:9px; color:var(--muted); font-size:11px; line-height:1.5; max-width:390px; }
+.privacy-hint svg { flex:0 0 auto; width:17px; height:17px; color:var(--accent); margin-top:1px; }
+.primary-button { display:inline-flex; align-items:center; justify-content:center; gap:18px; border:0; border-radius:13px; padding:15px 19px 15px 22px; background:var(--ink); color:#fff; font-weight:800; cursor:pointer; min-width:190px; box-shadow:0 9px 22px rgba(23,26,36,.15); transition:transform .18s,background .18s,box-shadow .18s; }
+.primary-button svg { width:19px; height:19px; }
+.primary-button:hover { background:var(--accent); transform:translateY(-1px); box-shadow:0 12px 26px rgba(98,86,232,.22); }
+.primary-button:disabled { opacity:.6; cursor:wait; transform:none; }
+.message { min-height:22px; margin:17px 0 0; font-size:13px; font-weight:700; }
+.success { color:var(--success); }
+.error { color:var(--danger); }
+.site-footer { display:flex; justify-content:space-between; color:#9a9eaa; font-size:11px; padding:25px 2px 5px; }
+@media (max-width:700px) { .site-header{width:min(100% - 28px,900px);height:68px}.admin-link{display:none}.main-content{width:min(100% - 24px,900px);padding:44px 0 18px}.hero{margin-bottom:30px}h1{font-size:43px}.hero>p{font-size:14px;line-height:1.65}.form-card{padding:25px 19px;border-radius:21px}.form-intro{align-items:flex-start;flex-direction:column;gap:10px}.two-columns{grid-template-columns:1fr}.divider{margin:31px 0 26px}.submit-row{align-items:stretch;flex-direction:column}.privacy-hint{max-width:none}.primary-button{width:100%}.site-footer{padding-left:0;padding-right:0} }
+
+
+/* Mobile / Android / iOS compatibility */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+}
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+input, select, textarea {
+  font-size: 16px; /* prevents automatic zoom on iOS */
+}
+button, .primary-button, .login-button, .refresh-button, .export-button,
+.topbar-actions button, .delete-btn, .danger-button, .close {
+  min-height: 44px;
+}
+@media (max-width: 700px) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .site-header {
+    width: calc(100% - 24px);
+    min-height: 68px;
+    height: auto;
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+  .main-content {
+    width: calc(100% - 24px);
+    padding-top: 34px;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+  .hero {
+    margin-bottom: 25px;
+  }
+  h1 {
+    font-size: clamp(34px, 10vw, 43px);
+    line-height: 1.04;
+  }
+  .hero > p {
+    font-size: 14px;
+    margin-top: 18px;
+  }
+  .form-card {
+    padding: 22px 16px;
+    border-radius: 19px;
+  }
+  .field input, .field textarea, .field select,
+  select, input, textarea {
+    min-height: 48px;
+  }
+  .site-footer {
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 430px) {
+  .brand-logo {
+    width: 190px;
+    max-height: 52px;
+  }
+  .form-card {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .submit-row {
+    gap: 16px;
+  }
+}
+
+/* Admin mobile */
+@media (max-width: 700px) {
+  .login-screen {
+    min-height: 100dvh;
+    min-height: 100svh;
+    padding: max(16px, env(safe-area-inset-top))
+             max(14px, env(safe-area-inset-right))
+             max(16px, env(safe-area-inset-bottom))
+             max(14px, env(safe-area-inset-left));
+  }
+  .login-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+  .login-icon {
+    margin-top: 30px;
+  }
+  .topbar {
+    height: auto;
+    min-height: 64px;
+    padding-top: env(safe-area-inset-top);
+  }
+  .topbar-inner {
+    width: calc(100% - 24px);
+    min-height: 64px;
+    height: auto;
+  }
+  .admin {
+    width: calc(100% - 24px);
+    padding-top: 28px;
+    padding-bottom: max(30px, env(safe-area-inset-bottom));
+  }
+  .admin-heading {
+    margin-bottom: 20px;
+  }
+  .admin-heading h1 {
+    font-size: 28px;
+    line-height: 1.1;
+  }
+  .admin-heading p:not(.admin-kicker) {
+    line-height: 1.55;
+  }
+  .heading-actions {
+    gap: 8px;
+  }
+  .heading-actions > * {
+    min-height: 46px;
+  }
+  .stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
+    min-height: 100px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .stat-card b {
+    font-size: 25px;
+  }
+  .toolbar {
+    gap: 9px;
+    margin-bottom: 12px;
+  }
+  .search-box {
+    min-height: 48px;
+  }
+  .toolbar select {
+    min-height: 48px;
+  }
+  .table-card {
+    overflow: hidden;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  table {
+    min-width: 820px;
+  }
+  th, td {
+    white-space: nowrap;
+  }
+  .row-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+  .row-actions button {
+    min-height: 40px;
+  }
+  dialog {
+    width: calc(100% - 20px);
+    max-width: 560px;
+    max-height: calc(100dvh - 20px);
+    max-height: calc(100svh - 20px);
+    margin: auto;
+    border-radius: 18px;
+    padding: 20px;
+  }
+}
+@media (max-width: 380px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .stat-card {
+    min-height: 88px;
+  }
+  .admin-brand small {
+    display: none;
+  }
+  .login-card {
+    padding: 24px 17px;
+  }
+}
+
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: .68;
+}
+
+.progress-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:10px}.progress-head>div{display:flex;flex-direction:column;gap:3px}.progress-step{font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--accent)}.progress-head strong{font-size:13px}.progress-head span:last-child{font-size:10px;color:var(--muted);white-space:nowrap}.progress-track{height:5px;background:#ececf2;border-radius:999px;overflow:hidden;margin-bottom:23px}.progress-track span{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .25s ease}
+.profession-list{display:grid;gap:11px}.profession-option{width:100%;display:flex;align-items:center;justify-content:space-between;gap:18px;text-align:left;border:1px solid var(--line);border-radius:15px;background:#fbfbfd;color:var(--ink);padding:17px 18px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .18s}.profession-option:hover{border-color:#cfd2dc;background:#fff;transform:translateY(-1px)}.profession-option.selected{border-color:var(--profession-green);background:#eef9f3;box-shadow:0 0 0 3px rgba(22,131,77,.10)}.profession-option-main{display:grid;gap:6px}.profession-option-main strong{font-size:14px;line-height:1.3}.profession-option-main span{font-size:12px;line-height:1.5;color:var(--muted);font-weight:500}.profession-check{flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);color:transparent;font-weight:900;background:#fff}.profession-option.selected .profession-check{background:var(--profession-green);border-color:var(--profession-green);color:#fff}@media(max-width:600px){.profession-option{padding:15px 14px;gap:12px}.profession-option-main strong{font-size:13px}.profession-option-main span{font-size:11px}.profession-check{flex-basis:26px;width:26px;height:26px}}
+
+.trap-field{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}.success-state{text-align:center;padding:25px 10px 8px}.success-check{width:62px;height:62px;margin:0 auto 15px;border-radius:50%;display:grid;place-items:center;background:#eaf8f0;color:#20834b;font-size:30px;font-weight:900}.success-state h2{margin:4px 0 9px;font-size:28px;letter-spacing:-.04em}.success-state>p:not(.section-kicker){max-width:470px;margin:0 auto;color:var(--muted);font-size:13px;line-height:1.65}.next-steps{max-width:520px;margin:25px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.next-steps div{padding:13px 8px;border:1px solid var(--line);border-radius:12px;background:#fafafd}.next-steps b{display:block;margin:0 auto 7px;width:24px;height:24px;border-radius:50%;background:#ececf4;display:grid;place-items:center;font-size:11px}.next-steps div:first-child b{background:#eaf8f0;color:#20834b}.next-steps span{font-size:10px;color:var(--muted)}.secondary-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:1px solid var(--line);border-radius:11px;color:var(--ink);font-weight:800;font-size:11px;background:#fff}.secondary-button:hover{background:#f7f7fa}@media(max-width:600px){.progress-head{align-items:flex-start}.next-steps{grid-template-columns:1fr;max-width:300px}.next-steps div{display:flex;align-items:center;gap:9px;text-align:left}.next-steps b{margin:0;flex:0 0 24px}}
+
+.field input:invalid:not(:placeholder-shown),.field textarea:invalid:not(:placeholder-shown),.field select:invalid{border-color:#d87580}.field input:valid:not(:placeholder-shown),.field textarea:valid:not(:placeholder-shown),.field select:valid{border-color:#b8ddc8}.primary-button{transition:transform .18s ease,box-shadow .18s ease,opacity .18s ease}.primary-button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 20px #1a1d2a18}.primary-button:active:not(:disabled){transform:translateY(0)}.message.error{padding:11px 13px;border:1px solid #efcbd1;background:#fff5f6;border-radius:10px;color:#a23847}.message.success{padding:11px 13px;border:1px solid #c7e7d3;background:#f2fbf5;border-radius:10px;color:#287548}
+
+
+/* =========================================================
+   v1.5.1 — Mobile form layout
+   Desktop layout is intentionally preserved above.
+   ========================================================= */
+@media screen and (max-width: 700px) {
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-size: 16px;
+  }
+
+  .page-shell,
+  .main-content,
+  .form-card,
+  #applicationForm {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .site-header {
+    width: calc(100% - 24px);
+    max-width: none;
+    margin: 0 auto;
+  }
+
+  .main-content {
+    width: calc(100% - 24px);
+    margin: 0 auto;
+    padding-top: 30px;
+  }
+
+  .hero {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero h1 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .form-card {
+    padding: 22px 16px;
+    border-radius: 20px;
+  }
+
+  /* Every field becomes a single full-width block. */
+  .field-grid,
+  .field-grid.two-columns,
+  .two-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    gap: 16px;
+  }
+
+  .field,
+  .field-wide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+  }
+
+  .field > span {
+    display: block;
+    width: 100%;
+    line-height: 1.35;
+  }
+
+  .field input,
+  .field textarea,
+  .field select,
+  .input-suffix,
+  .input-suffix input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .input-suffix {
+    display: block;
+  }
+
+  .input-suffix input {
+    padding-right: 88px;
+  }
+
+  .field textarea {
+    min-height: 120px;
+  }
+
+  .form-intro {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .required-note {
+    width: 100%;
+  }
+
+  .progress-head {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .progress-head > div {
+    min-width: 0;
+  }
+
+  .progress-head strong,
+  .progress-head .progress-step {
+    overflow-wrap: anywhere;
+  }
+
+  .progress-head span:last-child {
+    flex: 0 0 auto;
+  }
+
+  .divider {
+    margin: 30px 0 26px;
+  }
+
+  .submit-row {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .privacy-hint {
+    width: 100%;
+    max-width: none;
+  }
+
+  .primary-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .site-footer {
+    width: 100%;
+  }
+}
+
+/* Extra-small phones */
+@media screen and (max-width: 380px) {
+  .main-content {
+    width: calc(100% - 18px);
+  }
+
+  .form-card {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  h1 {
+    font-size: 34px;
+  }
+
+  .progress-head {
+    gap: 10px;
+  }
+
+  .progress-head span:last-child {
+    font-size: 9px;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Центр Занятости Населения">
+        <img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения">
+      </a>
+      <a class="admin-link" href="/admin">Для работодателя <span aria-hidden="true">→</span></a>
+    </header>
+
+    <main class="main-content">
+      <section class="hero">
+        <div class="eyebrow"><span></span> Открытая вакансия</div>
+        <h1>Расскажите о себе —<br><em>мы свяжемся с вами.</em></h1>
+        <p>Заполните небольшую анкету. Нам важно понять ваш опыт, интересы и подходящий формат работы.</p>
+      </section>
+
+      <section class="form-card" aria-labelledby="form-title">
+        <div class="form-intro">
+          <div>
+            <p class="section-kicker">01 / 04</p>
+            <h2 id="form-title">Личная информация</h2>
+          </div>
+          <p class="required-note"><span>*</span> обязательные поля</p>
+        </div>
+
+        <form id="applicationForm">
+          <input type="hidden" name="_startedAt" id="formStartedAt" value="">
+          <div class="trap-field" aria-hidden="true"><label>Сайт<input name="website" tabindex="-1" autocomplete="off"></label></div>
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span>Фамилия <b>*</b></span>
+              <input name="lastName" autocomplete="family-name" placeholder="Иванов" minlength="2" maxlength="80" required>
+            </label>
+            <label class="field">
+              <span>Имя <b>*</b></span>
+              <input name="firstName" autocomplete="given-name" placeholder="Иван" minlength="2" maxlength="80" required>
+            </label>
+            <label class="field">
+              <span>Номер телефона <b>*</b></span>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="18" pattern="\+7 \([0-9]{3}\) [0-9]{3}-[0-9]{2}-[0-9]{2}" placeholder="+7 (999) 123-45-67" aria-describedby="phoneHint" required>
+              <small id="phoneHint" class="field-hint">Введите 10 цифр номера — формат заполнится автоматически</small>
+            </label>
+            <label class="field">
+              <span>Возраст <b>*</b></span>
+              <div class="input-suffix"><input name="age" type="number" min="14" max="100" inputmode="numeric" placeholder="25" required><span>лет</span></div>
+            </label>
+            <label class="field">
+              <span>Город проживания <b>*</b></span>
+              <input name="city" autocomplete="address-level2" placeholder="Москва" minlength="2" maxlength="120" required>
+            </label>
+            <label class="field">
+              <span>Username в Telegram <b>*</b></span>
+              <input name="telegramUsername" autocomplete="username" placeholder="@username" minlength="2" maxlength="64" required>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+          <div class="form-intro compact">
+            <div>
+              <p class="section-kicker">02 / 04</p>
+              <h2>Опыт и образование</h2>
+            </div>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field field-wide">
+              <span>Чем занимались ранее?</span>
+              <textarea name="previousActivity" rows="4" maxlength="3000" placeholder="Коротко расскажите о предыдущей деятельности, проектах или основных занятиях..."></textarea>
+            </label>
+            <label class="field field-wide">
+              <span>Место обучения</span>
+              <input name="education" maxlength="500" placeholder="Название учебного заведения, специальность">
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Опыт работы и сферы</span>
+            <textarea name="workExperience" rows="5" maxlength="5000" placeholder="Например: продажи — 2 года, клиентский сервис — 1 год..."></textarea>
+          </label>
+
+          <div class="divider"></div>
+          <section class="profession-section" aria-labelledby="profession-title">
+            <div class="form-intro compact">
+              <div>
+                <p class="section-kicker">03 / 04</p>
+                <h2 id="profession-title">Выбор профессии</h2>
+              </div>
+              <p class="required-note"><span>*</span> обязательный выбор</p>
+            </div>
+            <input type="hidden" name="profession" id="profession" value="">
+            <div class="profession-list" role="group" aria-label="Выбор профессии">
+              <button type="button" class="profession-option" data-profession="Специалист по проверке товаров" aria-pressed="false">
+                <span class="profession-option-main"><strong>Специалист по проверке товаров</strong><span>Контроль наличия, состояния, характеристик и соответствия товара установленным требованиям.</span></span><span class="profession-check">✓</span>
+              </button>
+              <button type="button" class="profession-option" data-profession="Агент по работе с объектами" aria-pressed="false">
+                <span class="profession-option-main"><strong>Агент по работе с объектами</strong><span>Проверка и актуализация информации по объектам недвижимости, транспорту, коммерческим предложениям и другим направлениям.</span></span><span class="profession-check">✓</span>
+              </button>
+              <button type="button" class="profession-option" data-profession="Администратор объектов" aria-pressed="false">
+                <span class="profession-option-main"><strong>Администратор объектов</strong><span>Сбор, систематизация и обновление информации по закреплённым объектам.</span></span><span class="profession-check">✓</span>
+              </button>
+              <button type="button" class="profession-option" data-profession="Менеджер по работе с клиентами" aria-pressed="false">
+                <span class="profession-option-main"><strong>Менеджер по работе с клиентами</strong><span>Консультирование, обработка обращений, передача информации и сопровождение клиента на начальном этапе.</span></span><span class="profession-check">✓</span>
+              </button>
+              <button type="button" class="profession-option" data-profession="Агент по поиску объектов" aria-pressed="false">
+                <span class="profession-option-main"><strong>Агент по поиску объектов</strong><span>Поиск подходящих объектов и предложений согласно установленным требованиям.</span></span><span class="profession-check">✓</span>
+              </button>
+              <button type="button" class="profession-option" data-profession="Специалист выездной проверки" aria-pressed="false">
+                <span class="profession-option-main"><strong>Специалист выездной проверки</strong><span>Посещение объектов, визуальная оценка и подготовка краткого отчёта по результатам проверки.</span></span><span class="profession-check">✓</span>
+              </button>
+              <button type="button" class="profession-option" data-profession="Тайный покупатель" aria-pressed="false">
+                <span class="profession-option-main"><strong>Тайный покупатель</strong><span>Проверка качества обслуживания, соответствия заявленным условиям и фактического состояния объекта или услуги.</span></span><span class="profession-check">✓</span>
+              </button>
+            </div>
+          </section>
+
+          <div class="divider"></div>
+          <div class="form-intro compact">
+            <div>
+              <p class="section-kicker">04 / 04</p>
+              <h2>Ваши пожелания</h2>
+            </div>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span>Желаемый график <b>*</b></span>
+              <select name="desiredSchedule" required>
+                <option value="">Выберите график</option>
+                <option>Полный день</option>
+                <option>Неполный день</option>
+                <option>Сменный график</option>
+                <option>Удалённая работа</option>
+                <option>Гибкий график</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Желаемый заработок <b>*</b></span>
+              <div class="input-suffix"><input name="desiredSalary" type="number" min="0" max="100000000" step="1000" inputmode="numeric" placeholder="80 000" required><span>₽/мес.</span></div>
+            </label>
+          </div>
+
+          <div class="submit-row">
+            <div class="privacy-hint">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 10V7.5a5 5 0 0 1 10 0V10M6 10h12v9H6v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 13.5v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span>Данные используются только для связи по вопросу трудоустройства.</span>
+            </div>
+            <button class="primary-button" type="submit">
+              <span>Отправить анкету</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <p id="message" class="message" role="status" aria-live="polite"></p>
+        </form>
+        <div id="successState" class="success-state" hidden>
+          <div class="success-check" aria-hidden="true">✓</div>
+          <p class="section-kicker">Анкета принята</p>
+          <h2>Спасибо за отклик!</h2>
+          <p>Мы получили вашу анкету и рассмотрим её. Если ваш опыт нам подойдёт, мы свяжемся с вами.</p>
+          <div class="next-steps"><div><b>✓</b><span>Анкета получена</span></div><div><b>2</b><span>Рассмотрение</span></div><div><b>3</b><span>Связь с кандидатом</span></div></div>
+          <div class="contact-actions">
+            <a id="telegramContact" class="telegram-button" href="https://t.me/irina_mogileve" target="_blank" rel="noopener noreferrer">Написать в Telegram <span>↗</span></a>
+            <a class="secondary-button" href="#candidateChat">Открыть чат с администратором</a>
+          </div>
+          <section id="candidateChat" class="candidate-chat" hidden aria-label="Чат с администратором">
+            <div class="candidate-chat-head"><div><b>Чат с администратором</b><span id="candidateChatStatus">Подключаем чат…</span></div><span class="chat-live-dot" aria-hidden="true"></span></div>
+            <div id="candidateChatMessages" class="candidate-chat-messages"></div>
+            <form id="candidateChatForm" class="candidate-chat-form"><textarea id="candidateChatInput" maxlength="2000" rows="2" placeholder="Напишите сообщение…" required></textarea><button type="submit">Отправить <span>→</span></button></form>
+            <p class="candidate-chat-note">Сообщения доступны вам и администратору сайта.</p>
+          </section>
+          <a class="secondary-button" href="/">Заполнить новую анкету</a>
+        </div>
+      </section>
+
+      <footer class="site-footer"><span>Спасибо за интерес к нашей команде.</span><span>© <span id="year"></span></span></footer>
+    </main>
+  </div>
+  <script src="/app.js?v=1.8.0"></script>
+</body>
+</html>

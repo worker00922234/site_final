@@ -1,0 +1,22 @@
+[Unit]
+Description=Job Application Node.js backend
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/job-application-site
+EnvironmentFile=/etc/job-application-site.env
+ExecStart=/usr/bin/node /opt/job-application-site/server.js
+Restart=always
+RestartSec=5
+User=jobapp
+Group=jobapp
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/job-application-site
+
+[Install]
+WantedBy=multi-user.target
