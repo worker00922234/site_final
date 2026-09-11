@@ -408,6 +408,21 @@ app.post("/api/applications", applicationLimiter, requireSameOrigin, (req, res) 
   );
 
   recentApplicationByIp.set(clientKey, Date.now());
+
+  // Notify the administrator in Telegram about every new application.
+  void notifyNewApplicationViaTelegram({
+    applicationId: Number(result.lastInsertRowid),
+    lastName: fields.lastName,
+    firstName: fields.firstName,
+    phone: normalizedPhone,
+    telegramUsername: fields.telegramUsername,
+    age: numericAge,
+    city: fields.city,
+    profession: fields.profession,
+    desiredSchedule: String(desiredSchedule).trim(),
+    desiredSalary: numericSalary
+  });
+
   res.status(201).json({ id: result.lastInsertRowid, chatToken });
 });
 
@@ -419,6 +434,64 @@ function getApplicationByChatToken(token) {
 
 function cleanChatMessage(value) {
   return String(value ?? "").trim().replace(/\r\n/g, "\n").slice(0, 2000);
+}
+
+async function notifyNewApplicationViaTelegram({
+  applicationId, lastName, firstName, phone, telegramUsername, age, city,
+  profession, desiredSchedule, desiredSalary
+}) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
+    console.warn("Telegram notifications are disabled: set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID.");
+    return;
+  }
+
+  const candidateName = `${firstName || ""} ${lastName || ""}`.trim() || "Кандидат";
+  const salary = Number(desiredSalary).toLocaleString("ru-RU");
+  const username = String(telegramUsername || "").trim();
+  const telegramDisplay = username ? (username.startsWith("@") ? username : `@${username}`) : "—";
+
+  const lines = [
+    "🆕 <b>Новая анкета соискателя</b>",
+    `📌 <b>Анкета №${applicationId}</b>`,
+    `👤 <b>${escapeTelegramHtml(candidateName)}</b>`,
+    `🎂 Возраст: ${escapeTelegramHtml(age)}`,
+    `📱 Телефон: <code>${escapeTelegramHtml(phone)}</code>`,
+    `💬 Telegram: ${escapeTelegramHtml(telegramDisplay)}`,
+    `🏙 Город: ${escapeTelegramHtml(city)}`,
+    `💼 Профессия: ${escapeTelegramHtml(profession)}`,
+    `🕐 График: ${escapeTelegramHtml(desiredSchedule)}`,
+    `💰 Зарплата: ${escapeTelegramHtml(salary)} ₽/мес.`
+  ];
+
+  const payload = {
+    chat_id: TELEGRAM_ADMIN_CHAT_ID,
+    text: lines.join("\n"),
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "↩️ Ответить кандидату", callback_data: `candidate_reply:${applicationId}` }],
+        ...(PUBLIC_SITE_URL
+          ? [[{ text: "Открыть админ-панель", url: `${PUBLIC_SITE_URL}/admin-dashboard.html?application=${applicationId}` }]]
+          : [])
+      ]
+    }
+  };
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      console.error("New application Telegram notification failed:", data?.description || response.statusText);
+    }
+  } catch (error) {
+    console.error("New application Telegram notification error:", error.message);
+  }
 }
 
 async function notifyAdminViaTelegram({ applicationId, candidateName, message }) {
