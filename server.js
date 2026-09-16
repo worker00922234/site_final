@@ -665,15 +665,43 @@ app.get("/api/applications/export.csv", requireAdmin, (req, res) => {
   res.send(csv);
 });
 
-// Serve the canonical root URL explicitly so Telegram's crawler receives the
-// same HTML/OG metadata regardless of static-file negotiation or proxy headers.
-// The preview itself is fully described in public/index.html.
-app.get("/", (_req, res) => {
+// Telegram fetches the root URL server-side and does not execute the app JS.
+// Give its crawler a tiny, deterministic HTML response containing only the
+// Open Graph data it needs. Normal browsers still receive the full application.
+const TELEGRAM_PREVIEW_HTML = `<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>Центр Занятости Населения — Анкета соискателя</title>
+  <meta name="description" content="Заполните анкету для рассмотрения вашей кандидатуры.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Центр Занятости Населения">
+  <meta property="og:title" content="Анкета соискателя">
+  <meta property="og:description" content="Заполните анкету для рассмотрения вашей кандидатуры.">
+  <meta property="og:url" content="https://site001-production-1981.up.railway.app/">
+  <meta property="og:image" content="https://site001-production-1981.up.railway.app/assets/telegram-preview-v2.jpg">
+  <meta property="og:image:secure_url" content="https://site001-production-1981.up.railway.app/assets/telegram-preview-v2.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+</head>
+<body>Анкета соискателя</body>
+</html>`;
+
+app.get("/", (req, res) => {
+  const userAgent = String(req.get("user-agent") || "");
+  const isTelegramCrawler = /TelegramBot/i.test(userAgent);
+
   res.set({
     "Cache-Control": "no-cache, no-store, must-revalidate",
-    "X-Robots-Tag": "index, follow"
+    "X-Robots-Tag": "index, follow",
+    "Content-Type": "text/html; charset=utf-8"
   });
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+
+  if (isTelegramCrawler) return res.status(200).send(TELEGRAM_PREVIEW_HTML);
+  return res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.use(express.static(path.join(__dirname, "public")));
