@@ -665,6 +665,17 @@ app.get("/api/applications/export.csv", requireAdmin, (req, res) => {
   res.send(csv);
 });
 
+// Serve the canonical root URL explicitly so Telegram's crawler receives the
+// same HTML/OG metadata regardless of static-file negotiation or proxy headers.
+// The preview itself is fully described in public/index.html.
+app.get("/", (_req, res) => {
+  res.set({
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "X-Robots-Tag": "index, follow"
+  });
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 // Protected administrator panel. The login page is server-rendered so login does not depend on JavaScript.
