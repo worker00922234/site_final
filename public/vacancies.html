@@ -11,7 +11,7 @@
   <meta property="og:url" content="https://site001-production-1981.up.railway.app/vacancies">
   <meta property="og:image" content="https://site001-production-1981.up.railway.app/assets/telegram-preview-final-2026.jpg">
   <title>Вакансии — ЦЗН</title>
-  <link rel="stylesheet" href="/styles.css?v=1.10.0">
+  <link rel="stylesheet" href="/styles.css?v=1.11.1">
 </head>
 <body class="vacancies-page">
   <div class="page-shell">
@@ -44,13 +44,6 @@
     </main>
   </div>
 
-  <script>
-    const grid=document.getElementById('vacancyGrid'),empty=document.getElementById('vacancyEmpty'),count=document.getElementById('vacancyCount'),search=document.getElementById('vacancySearch');
-    let vacancies=[];
-    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    function render(filter=''){const q=filter.trim().toLowerCase();const rows=vacancies.filter(v=>[v.title,v.category,v.city,v.schedule,v.salary,v.description].join(' ').toLowerCase().includes(q));count.textContent=rows.length;grid.innerHTML=rows.map((v,i)=>`<article class="vacancy-card"><div class="vacancy-card-top"><span class="vacancy-tag">${esc(v.category)}</span><span class="vacancy-id">№ ${String(i+1).padStart(2,'0')}</span></div><h2>${esc(v.title)}</h2><p>${esc(v.description)}</p><div class="vacancy-meta"><span>⌖ ${esc(v.city)}</span><span>◷ ${esc(v.schedule)}</span><span>₽ ${esc(v.salary.replace(' ₽',''))}</span></div><div class="vacancy-card-actions"><a class="secondary-button" href="/vacancies/${encodeURIComponent(v.slug)}">Подробнее</a><a class="primary-button" href="/?vacancy=${encodeURIComponent(v.title)}">Откликнуться <span>→</span></a></div></article>`).join('');empty.hidden=rows.length!==0;grid.hidden=rows.length===0;}
-    search.addEventListener('input',e=>render(e.target.value));document.getElementById('year').textContent=new Date().getFullYear();
-    fetch('/api/vacancies').then(r=>r.json()).then(d=>{vacancies=d.vacancies||[];render()}).catch(()=>{empty.hidden=false;empty.textContent='Не удалось загрузить вакансии.'});
-  </script>
+  <script src="/vacancies.js?v=1.11.1" defer></script>
 </body>
 </html>

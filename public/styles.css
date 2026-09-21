@@ -616,3 +616,49 @@ body{background:linear-gradient(180deg,#f7fbff 0%,#fff 58%,#f8fbff 100%);color:v
 .home-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px}.home-card{display:flex;align-items:center;gap:15px;padding:22px;border:1px solid #dbe8f5;border-radius:20px;background:#fff;box-shadow:0 12px 38px rgba(13,65,125,.07);text-decoration:none}.home-card-icon{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:#0b66cf;color:#fff;font-size:23px;flex:0 0 auto}.home-card b{display:block;color:#0b438b;font-size:16px;margin-bottom:5px}.home-card span{display:block;color:#6c7d94;font-size:12px;line-height:1.5}.home-card-arrow{margin-left:auto;color:#0758b5;font-size:22px}.home-info{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.home-info-card{padding:28px;border:1px solid #dbe8f5;border-radius:24px;background:#fff;box-shadow:var(--shadow)}.home-info-card h2{margin:0 0 10px}.home-info-card p{color:#61718b;line-height:1.7;margin:0}
 @media(max-width:1050px){.site-header{width:min(100% - 36px,1240px)}.site-nav{gap:0}.nav-link{padding-left:9px;padding-right:9px;font-size:12px}.hero-visual{opacity:.45;right:20px}.home-hero .hero-copy{max-width:760px}.vacancy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.site-header{width:calc(100% - 24px);height:auto;min-height:72px;padding-top:max(7px,env(safe-area-inset-top));flex-wrap:wrap}.brand-logo{width:190px!important;height:54px!important;max-height:54px!important}.site-nav{order:3;width:100%;justify-content:space-between;overflow-x:auto;margin:0;padding-bottom:4px}.nav-link{font-size:11px;min-height:38px;padding:8px 7px;white-space:nowrap}.nav-link:nth-child(4),.nav-link:nth-child(5){display:none}.header-actions{margin-left:auto}.app-download-button{font-size:0;width:44px;padding:8px}.app-download-button span{font-size:18px}.header-admin-link{font-size:0;width:44px;padding:8px;justify-content:center}.header-admin-link span{font-size:17px}.main-content,.about-page .main-content,.vacancies-page .main-content,.vacancy-detail-page .main-content{width:calc(100% - 24px);padding-top:36px}.hero h1{font-size:clamp(38px,11vw,54px)}.hero>p{font-size:14px}.hero-visual{display:none}.home-hero{min-height:0}.home-cards,.home-info{grid-template-columns:1fr}.home-card{padding:18px}.vacancy-grid{grid-template-columns:1fr}}
+
+
+/* v1.11.1 — vacancies rendering + stable header/logo sizing */
+.vacancy-loading {
+  grid-column: 1 / -1;
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbe8f5;
+  border-radius: 22px;
+  background: #fff;
+  color: #6c7d94;
+  font-size: 13px;
+  font-weight: 700;
+}
+.site-header {
+  width: min(1320px, calc(100% - 40px));
+  gap: 14px;
+}
+.brand {
+  flex: 0 1 220px;
+  min-width: 190px;
+  overflow: hidden;
+}
+.brand-logo {
+  display: block;
+  width: 220px !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 62px !important;
+  object-fit: contain;
+  object-position: left center;
+}
+.site-nav {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+@media (max-width: 1180px) {
+  .site-header { width: calc(100% - 28px); gap: 10px; }
+  .brand { flex-basis: 190px; min-width: 170px; }
+  .brand-logo { width: 190px !important; max-height: 54px !important; }
+  .site-nav { overflow-x: auto; scrollbar-width: none; }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .nav-link { padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+  .header-actions { flex: 0 0 auto; }
+}
