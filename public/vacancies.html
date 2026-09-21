@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fc">
+  <meta name="description" content="Вакансии ЦЗН — каталог предложений для соискателей с подробностями и возможностью откликнуться.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Вакансии — ЦЗН">
+  <meta property="og:description" content="Выберите подходящую вакансию и заполните анкету соискателя.">
+  <meta property="og:url" content="https://site001-production-1981.up.railway.app/vacancies">
+  <meta property="og:image" content="https://site001-production-1981.up.railway.app/assets/telegram-preview-final-2026.jpg">
+  <title>Вакансии — ЦЗН</title>
+  <link rel="stylesheet" href="/styles.css?v=1.10.0">
+</head>
+<body class="vacancies-page">
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Центр Занятости Населения">
+        <img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения">
+      </a>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a class="nav-link" href="/">Главная</a>
+        <a class="nav-link" href="/about">О компании</a>
+        <a class="nav-link active" href="/vacancies" aria-current="page">Вакансии</a>
+        <a class="nav-link nav-employer" href="/admin">Работодателю <span aria-hidden="true">→</span></a>
+      </nav>
+      <div class="header-actions">
+        <a class="app-download-button" href="/RabotaRU.apk" download="RabotaRU.apk" type="application/vnd.android.package-archive" aria-label="Установить приложение RabotaRU"><span aria-hidden="true">↓</span> Установить приложение</a>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="hero vacancies-hero">
+        <div class="eyebrow"><span></span> Вакансии</div>
+        <h1>Работа, которая <em>подходит вам.</em></h1>
+        <p>Посмотрите предложения, выберите интересующее направление и оставьте заявку. После заполнения анкеты специалист сможет связаться с вами для обсуждения деталей.</p>
+      </section>
+
+      <section class="vacancy-toolbar" aria-label="Фильтр вакансий">
+        <div class="vacancy-count"><strong id="vacancyCount">6</strong> предложений</div>
+        <label class="vacancy-search"><span aria-hidden="true">⌕</span><input id="vacancySearch" type="search" placeholder="Поиск по должности или направлению" autocomplete="off"></label>
+      </section>
+
+      <section class="vacancy-grid" id="vacancyGrid" aria-live="polite"></section>
+      <div class="vacancy-empty" id="vacancyEmpty" hidden>По вашему запросу вакансий не найдено. Попробуйте изменить формулировку поиска.</div>
+
+      <section class="vacancy-cta">
+        <div>
+          <p class="section-kicker">Не нашли подходящее предложение?</p>
+          <h2>Заполните анкету — мы сможем связаться с вами по вашему профилю.</h2>
+        </div>
+        <a class="primary-button" href="/">Заполнить анкету <span aria-hidden="true">→</span></a>
+      </section>
+
+      <footer class="site-footer"><span>ЦЗН — Центр Занятости Населения.</span><span>© <span id="year"></span></span></footer>
+    </main>
+  </div>
+
+  <script type="module">
+    import { vacancies } from '/vacancies-data.js';
+
+    const grid = document.getElementById('vacancyGrid');
+    const empty = document.getElementById('vacancyEmpty');
+    const count = document.getElementById('vacancyCount');
+    const search = document.getElementById('vacancySearch');
+    const byId = (id) => document.getElementById(id);
+
+    function render(filter='') {
+      const q = filter.trim().toLowerCase();
+      const rows = vacancies.filter(v => [v.title,v.category,v.city,v.schedule,v.salary,v.description].join(' ').toLowerCase().includes(q));
+      count.textContent = rows.length;
+      grid.innerHTML = rows.map(v => `
+        <article class="vacancy-card">
+          <div class="vacancy-card-top"><span class="vacancy-tag">${v.category}</span><span class="vacancy-id">№ ${String(vacancies.indexOf(v)+1).padStart(2,'0')}</span></div>
+          <h2>${v.title}</h2>
+          <p>${v.description}</p>
+          <div class="vacancy-meta"><span>⌖ ${v.city}</span><span>◷ ${v.schedule}</span><span>₽ ${v.salary.replace(' ₽','')}</span></div>
+          <div class="vacancy-card-actions"><a class="secondary-button details-button" href="/vacancies/${v.slug}">Подробнее</a><a class="primary-button vacancy-apply" href="/?vacancy=${encodeURIComponent(v.title)}">Откликнуться <span aria-hidden="true">→</span></a></div>
+        </article>`).join('');
+      empty.hidden = rows.length !== 0;
+      grid.hidden = rows.length === 0;
+    }
+
+    search.addEventListener('input', e => render(e.target.value));
+    byId('year').textContent = new Date().getFullYear();
+    render();
+  </script>
+</body>
+</html>

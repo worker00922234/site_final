@@ -6,6 +6,8 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import path from "path";
 import crypto from "crypto";
+import fs from "fs";
+import { vacancies } from "./public/vacancies-data.js";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -77,6 +79,23 @@ db.exec(`
   )
 `);
 db.pragma("foreign_keys = ON");
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS employer_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_name TEXT NOT NULL,
+    contact_name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT NOT NULL DEFAULT '',
+    vacancy TEXT NOT NULL DEFAULT '',
+    employees_needed INTEGER NOT NULL DEFAULT 1,
+    details TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'new',
+    notes TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
 
 const chatPostLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -644,6 +663,46 @@ app.delete("/api/applications/:id", requireAdmin, requireSameOrigin, (req, res) 
   res.status(204).end();
 });
 
+app.post("/api/employer-requests", applicationLimiter, requireSameOrigin, (req, res) => {
+  const clean = (value, max) => String(value ?? "").trim().replace(/\s+/g, " ").slice(0, max);
+  const cleanLong = (value, max) => String(value ?? "").trim().slice(0, max);
+  const companyName = clean(req.body?.companyName, 160);
+  const contactName = clean(req.body?.contactName, 120);
+  const phone = clean(req.body?.phone, 32);
+  const email = clean(req.body?.email, 160);
+  const vacancy = clean(req.body?.vacancy, 160);
+  const details = cleanLong(req.body?.details, 5000);
+  const employeesNeeded = Math.max(1, Math.min(10000, Number(req.body?.employeesNeeded) || 1));
+  const website = String(req.body?.website || "").trim();
+  if (website) return res.status(400).json({ error: "Не удалось отправить заявку. Попробуйте ещё раз." });
+  if (!companyName || !contactName || !phone) return res.status(400).json({ error: "Заполните название компании, контактное лицо и телефон." });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Укажите корректный email." });
+  const result = db.prepare(`INSERT INTO employer_requests (company_name, contact_name, phone, email, vacancy, employees_needed, details) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(companyName, contactName, phone, email, vacancy, employeesNeeded, details);
+  res.status(201).json({ ok: true, id: result.lastInsertRowid });
+});
+
+app.get("/api/employer-requests", requireAdmin, (_req, res) => {
+  res.json({ requests: db.prepare("SELECT * FROM employer_requests ORDER BY datetime(created_at) DESC, id DESC").all() });
+});
+
+app.patch("/api/employer-requests/:id/status", requireAdmin, requireSameOrigin, (req, res) => {
+  const id = Number(req.params.id);
+  const status = String(req.body?.status || "");
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Некорректный ID заявки." });
+  if (!["new", "contacted", "in_progress", "done", "rejected"].includes(status)) return res.status(400).json({ error: "Некорректный статус." });
+  const result = db.prepare("UPDATE employer_requests SET status = ? WHERE id = ?").run(status, id);
+  if (!result.changes) return res.status(404).json({ error: "Заявка не найдена." });
+  res.json({ ok: true });
+});
+
+app.patch("/api/employer-requests/:id/notes", requireAdmin, requireSameOrigin, (req, res) => {
+  const id = Number(req.params.id);
+  const notes = String(req.body?.notes || "").trim().slice(0, 5000);
+  const result = db.prepare("UPDATE employer_requests SET notes = ? WHERE id = ?").run(notes, id);
+  if (!result.changes) return res.status(404).json({ error: "Заявка не найдена." });
+  res.json({ ok: true });
+});
+
 app.get("/api/applications/export.csv", requireAdmin, (req, res) => {
   const ids = String(req.query.ids || "").split(",").map((v) => Number(v)).filter((v) => Number.isInteger(v) && v > 0).slice(0, 500);
   const rows = ids.length
@@ -663,6 +722,46 @@ app.get("/api/applications/export.csv", requireAdmin, (req, res) => {
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
   res.setHeader("Content-Disposition", `attachment; filename="candidates-${new Date().toISOString().slice(0,10)}.csv"`);
   res.send(csv);
+});
+
+// Public informational pages. Keep friendly URLs while preserving the existing
+// static assets and application endpoints.
+app.get("/about", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "about.html"));
+});
+
+app.get("/vacancies", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "vacancies.html"));
+});
+
+app.get("/employers", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "employers.html"));
+});
+
+app.get("/vacancies/:slug", (req, res) => {
+  const vacancy = vacancies.find((item) => item.slug === req.params.slug);
+  if (!vacancy) return res.status(404).sendFile(path.join(__dirname, "public", "index.html"));
+
+  const escapeHtml = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+  const baseUrl = PUBLIC_SITE_URL || "https://site001-production-1981.up.railway.app";
+  const template = fs.readFileSync(path.join(__dirname, "public", "vacancy.html"), "utf8");
+  const html = template
+    .replaceAll("__TITLE__", escapeHtml(vacancy.title))
+    .replaceAll("__CATEGORY__", escapeHtml(vacancy.category))
+    .replaceAll("__CITY__", escapeHtml(vacancy.city))
+    .replaceAll("__SCHEDULE__", escapeHtml(vacancy.schedule))
+    .replaceAll("__SALARY__", escapeHtml(vacancy.salary))
+    .replaceAll("__DESCRIPTION__", escapeHtml(vacancy.description))
+    .replaceAll("__TASKS__", vacancy.tasks.map((item) => `<li>${escapeHtml(item)}</li>`).join(""))
+    .replaceAll("__REQUIREMENTS__", vacancy.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join(""))
+    .replaceAll("__URL__", `${baseUrl}/vacancies/${encodeURIComponent(vacancy.slug)}`)
+    .replaceAll("__TITLE_ENCODED__", encodeURIComponent(vacancy.title));
+  res.type("html").send(html);
 });
 
 // Serve the public site normally. Telegram receives the same HTML as a browser,

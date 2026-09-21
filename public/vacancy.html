@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fc">
+  <meta name="description" content="__DESCRIPTION__">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="__TITLE__ — ЦЗН">
+  <meta property="og:description" content="__DESCRIPTION__">
+  <meta property="og:url" content="__URL__">
+  <meta property="og:image" content="https://site001-production-1981.up.railway.app/assets/telegram-preview-final-2026.jpg">
+  <title>__TITLE__ — ЦЗН</title>
+  <link rel="stylesheet" href="/styles.css?v=1.11.0">
+</head>
+<body class="vacancy-detail-page">
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Центр Занятости Населения"><img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения"></a>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a class="nav-link" href="/">Главная</a>
+        <a class="nav-link" href="/about">О компании</a>
+        <a class="nav-link active" href="/vacancies" aria-current="page">Вакансии</a>
+        <a class="nav-link nav-employer" href="/admin">Работодателю <span aria-hidden="true">→</span></a>
+      </nav>
+      <div class="header-actions"><a class="app-download-button" href="/RabotaRU.apk" download="RabotaRU.apk"><span aria-hidden="true">↓</span> Установить приложение</a></div>
+    </header>
+
+    <main class="main-content vacancy-detail-content">
+      <a class="back-link" href="/vacancies">← Все вакансии</a>
+      <section class="vacancy-detail-hero">
+        <div class="eyebrow"><span></span> __CATEGORY__</div>
+        <h1>__TITLE__</h1>
+        <p class="vacancy-detail-lead">__DESCRIPTION__</p>
+        <div class="detail-meta"><span>⌖ __CITY__</span><span>◷ __SCHEDULE__</span><span>₽ __SALARY__</span></div>
+      </section>
+
+      <section class="detail-layout">
+        <div class="detail-main">
+          <article class="detail-card"><p class="section-kicker">Задачи</p><h2>Что предстоит делать</h2><ul>__TASKS__</ul></article>
+          <article class="detail-card"><p class="section-kicker">Требования</p><h2>Что важно</h2><ul>__REQUIREMENTS__</ul></article>
+        </div>
+        <aside class="detail-apply-card">
+          <p class="section-kicker">Отклик на вакансию</p>
+          <h2>Хотите попробовать?</h2>
+          <p>Заполните анкету соискателя. Мы передадим информацию специалисту и свяжемся с вами для обсуждения следующих шагов.</p>
+          <a class="primary-button" href="/?vacancy=__TITLE_ENCODED__">Заполнить анкету <span aria-hidden="true">→</span></a>
+          <a class="secondary-button" href="/vacancies">Посмотреть другие вакансии</a>
+        </aside>
+      </section>
+
+      <footer class="site-footer"><span>ЦЗН — Центр Занятости Населения.</span><span>© <span id="year"></span></span></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

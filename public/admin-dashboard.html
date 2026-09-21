@@ -13,7 +13,7 @@
     <header class="topbar">
       <div class="topbar-inner">
         <a class="admin-brand" href="/admin" aria-label="Центр Занятости Населения"><img src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения"></a>
-        <div class="topbar-actions"><a href="/">Открыть анкету <span>↗</span></a><button id="logout" type="button">Выйти</button></div>
+        <div class="topbar-actions"><a href="/">Открыть сайт <span>↗</span></a><a href="/employers">Страница работодателя <span>↗</span></a><button id="logout" type="button">Выйти</button></div>
       </div>
     </header>
 
@@ -34,6 +34,12 @@
         <select id="scheduleFilter" aria-label="Фильтр по графику"><option value="">Любой график</option><option>Полный день</option><option>Неполный день</option><option>Сменный график</option><option>Удалённая работа</option><option>Гибкий график</option></select>
         <div class="salary-filter"><input id="salaryMin" type="number" min="0" step="1000" placeholder="ЗП от" aria-label="Зарплата от"><span>—</span><input id="salaryMax" type="number" min="0" step="1000" placeholder="до" aria-label="Зарплата до"></div>
         <select id="sortFilter" aria-label="Сортировка"><option value="newest">Сначала новые</option><option value="oldest">Сначала старые</option><option value="salaryHigh">Зарплата: по убыванию</option><option value="salaryLow">Зарплата: по возрастанию</option></select><button id="clearFilters" class="clear-filters" type="button">Сбросить фильтры</button>
+      </section>
+
+      <section class="table-card employer-requests-card" style="margin-top:28px;">
+        <div class="table-top"><div><strong>Заявки работодателей</strong><span id="employerResultCount">0 заявок</span></div><button id="employerRefresh" class="refresh-button" type="button">↻ Обновить</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Компания</th><th>Контакт</th><th>Вакансия</th><th>Кол-во</th><th>Телефон</th><th>Дата</th><th>Статус</th><th>Действия</th></tr></thead><tbody id="employerRequests"></tbody></table></div>
+        <div id="employerEmpty" class="empty" hidden><div class="empty-icon">⌁</div><strong>Заявок пока нет</strong><span>Новые заявки работодателей появятся здесь.</span></div>
       </section>
 
       <section class="table-card">

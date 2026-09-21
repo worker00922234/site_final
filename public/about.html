@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fc">
+  <meta name="description" content="ЦЗН — информация о компании, её подходе к работе с соискателями и работодателями.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="О компании — ЦЗН">
+  <meta property="og:description" content="ЦЗН помогает соискателям и работодателям решать задачи, связанные с трудоустройством.">
+  <meta property="og:url" content="https://site001-production-1981.up.railway.app/about">
+  <meta property="og:image" content="https://site001-production-1981.up.railway.app/assets/telegram-preview-final-2026.jpg">
+  <title>О компании — ЦЗН</title>
+  <link rel="stylesheet" href="/styles.css?v=1.9.0">
+</head>
+<body class="about-page">
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Центр Занятости Населения">
+        <img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения">
+      </a>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a class="nav-link" href="/">Главная</a>
+        <a class="nav-link" href="/about">О компании</a>
+        <a class="nav-link active" href="/vacancies" aria-current="page">Вакансии</a>
+        <a class="nav-link nav-employer" href="/admin">Работодателю <span aria-hidden="true">→</span></a>
+      </nav>
+      <div class="header-actions">
+        <a class="app-download-button" href="/RabotaRU.apk" download="RabotaRU.apk" type="application/vnd.android.package-archive" aria-label="Установить приложение RabotaRU"><span aria-hidden="true">↓</span> Установить приложение</a>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="hero about-hero">
+        <div class="eyebrow"><span></span> О компании</div>
+        <h1>ЦЗН — <em>о людях и работе.</em></h1>
+        <p>Мы создаём удобный путь от первого отклика до подходящего предложения, помогая соискателям и работодателям быстрее находить точки пересечения.</p>
+      </section>
+
+      <div class="about-grid">
+        <div>
+          <section class="about-card">
+            <p class="section-kicker">01 / ЦЗН</p>
+            <h2>Чем мы занимаемся</h2>
+            <p>ЦЗН — площадка для взаимодействия соискателей и работодателей. Мы собираем информацию о кандидатах, помогаем определить подходящее направление и передаём отклики для дальнейшего общения.</p>
+            <div class="about-points">
+              <div class="about-point"><div class="about-point-mark">✓</div><div><strong>Для соискателей</strong><span>Понятная анкета, выбор направления и возможность рассказать о своём опыте.</span></div></div>
+              <div class="about-point"><div class="about-point-mark">✓</div><div><strong>Для работодателей</strong><span>Получение структурированной информации о кандидатах и удобная работа с откликами.</span></div></div>
+              <div class="about-point"><div class="about-point-mark">✓</div><div><strong>Для обеих сторон</strong><span>Прямое взаимодействие и возможность обсудить детали сотрудничества.</span></div></div>
+            </div>
+          </section>
+
+          <section class="about-card">
+            <p class="section-kicker">02 / Подход</p>
+            <h2>Как мы работаем</h2>
+            <p>Стараемся сделать процесс максимально простым: сначала собираем основные сведения, затем помогаем сориентироваться в подходящих направлениях и обеспечиваем возможность связаться с ответственным специалистом.</p>
+          </section>
+        </div>
+
+        <aside>
+          <section class="about-card">
+            <p class="section-kicker">03 / Принципы</p>
+            <h2>Что для нас важно</h2>
+            <div class="about-stats">
+              <div class="about-stat"><strong>01</strong><span>Понятная коммуникация</span></div>
+              <div class="about-stat"><strong>02</strong><span>Внимание к опыту кандидата</span></div>
+              <div class="about-stat"><strong>03</strong><span>Удобство для работодателя</span></div>
+              <div class="about-stat"><strong>04</strong><span>Ответственный подход к данным</span></div>
+            </div>
+          </section>
+
+          <section class="about-card">
+            <p class="section-kicker">04 / Следующий шаг</p>
+            <h2>Хотите начать?</h2>
+            <p>Если вы ищете работу, заполните анкету. Если вы представляете компанию — воспользуйтесь разделом для работодателя.</p>
+            <div class="about-cta">
+              <a class="primary-button" href="/">Заполнить анкету <span aria-hidden="true">→</span></a>
+              <a class="secondary-button" href="/admin">Для работодателя</a>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <footer class="site-footer"><span>ЦЗН — Центр Занятости Населения.</span><span>© <span id="year"></span></span></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

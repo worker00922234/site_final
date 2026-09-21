@@ -264,3 +264,21 @@ refreshButton?.addEventListener("click",loadApplications);
 document.querySelector("#close")?.addEventListener("click",()=>document.querySelector("#details")?.close());
 document.querySelector("#logout")?.addEventListener("click",async()=>{await api("/api/logout",{method:"POST"});window.location.href="/admin";});
 loadApplications();
+
+// Заявки работодателей
+let employerRequests = [];
+const employerStatusLabels = {new:'Новая',contacted:'Связались',in_progress:'В работе',done:'Завершена',rejected:'Отказ'};
+async function loadEmployerRequests(){
+  const tbody=document.getElementById('employerRequests'); if(!tbody)return;
+  try{const r=await api('/api/employer-requests');const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Не удалось загрузить заявки.'); employerRequests=d.requests||[];
+    document.getElementById('employerResultCount').textContent=`${employerRequests.length} ${pluralize(employerRequests.length,'заявка','заявки','заявок')}`;
+    tbody.innerHTML=employerRequests.map(x=>`<tr><td><strong>${escapeHtml(x.company_name)}</strong></td><td>${escapeHtml(x.contact_name)}</td><td>${escapeHtml(x.vacancy||'—')}</td><td>${escapeHtml(x.employees_needed)}</td><td><a href="tel:${escapeAttr(x.phone)}">${escapeHtml(x.phone)}</a></td><td>${formatDate(x.created_at)}</td><td><select class="employer-status" data-id="${x.id}">${Object.entries(employerStatusLabels).map(([v,l])=>`<option value="${v}" ${x.status===v?'selected':''}>${l}</option>`).join('')}</select></td><td><button class="table-action employer-details" data-id="${x.id}" type="button">Подробнее</button></td></tr>`).join('');
+    document.getElementById('employerEmpty').hidden=employerRequests.length!==0;
+    tbody.querySelectorAll('.employer-status').forEach(s=>s.addEventListener('change',async()=>{const r=await api(`/api/employer-requests/${s.dataset.id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s.value})});if(!r.ok)await loadEmployerRequests();else{const x=employerRequests.find(a=>String(a.id)===String(s.dataset.id));if(x)x.status=s.value;}}));
+    tbody.querySelectorAll('.employer-details').forEach(b=>b.addEventListener('click',()=>showEmployerDetails(b.dataset.id)));
+  }catch(e){tbody.innerHTML=`<tr><td colspan="8">${escapeHtml(e.message)}</td></tr>`;}
+}
+function showEmployerDetails(id){const x=employerRequests.find(a=>String(a.id)===String(id));if(!x)return;const details=document.querySelector('#details'),body=document.querySelector('#detailsBody');if(!details||!body)return;
+ body.innerHTML=`<div class="details-title-row"><div><p class="admin-kicker">Заявка работодателя</p><h2>${escapeHtml(x.company_name)}</h2></div><span class="status-pill">${escapeHtml(employerStatusLabels[x.status]||x.status)}</span></div><div class="quick-contact"><a href="tel:${escapeAttr(x.phone)}">☎ Позвонить</a>${x.email?`<a href="mailto:${escapeAttr(x.email)}">✉ Написать</a>`:''}</div><dl class="details-list">${detail('Контактное лицо',x.contact_name)}${detail('Телефон',x.phone)}${detail('Email',x.email||'—')}${detail('Вакансия',x.vacancy||'—')}${detail('Количество сотрудников',x.employees_needed)}${detail('Комментарий',x.details||'—')}${detail('Дата заявки',formatDate(x.created_at))}</dl><div class="notes-box"><label for="employerNotes">Заметка ЦЗН</label><textarea id="employerNotes" rows="4" maxlength="5000">${escapeHtml(x.notes||'')}</textarea><button type="button" class="save-notes" id="saveEmployerNotes">Сохранить заметку</button><span class="save-state" id="employerNotesState"></span></div>`;
+ body.querySelector('#saveEmployerNotes')?.addEventListener('click',async()=>{const b=body.querySelector('#saveEmployerNotes'),state=body.querySelector('#employerNotesState');b.disabled=true;const notes=body.querySelector('#employerNotes').value;const r=await api(`/api/employer-requests/${x.id}/notes`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})});state.textContent=r.ok?'Сохранено':'Не удалось сохранить';if(r.ok)x.notes=notes.slice(0,5000);b.disabled=false;});details.showModal();}
+document.getElementById('employerRefresh')?.addEventListener('click',loadEmployerRequests);loadEmployerRequests();
