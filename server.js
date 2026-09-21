@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
-const APP_VERSION = "1.8.2-candidate-chat-telegram-replies";
+const APP_VERSION = "2.0.0-czn-redesign-vacancy-admin";
 const TELEGRAM_BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
 const TELEGRAM_ADMIN_CHAT_ID = String(process.env.TELEGRAM_ADMIN_CHAT_ID || "").trim();
 const PUBLIC_SITE_URL = String(process.env.PUBLIC_SITE_URL || "").trim().replace(/\/$/, "");
@@ -79,6 +79,33 @@ db.exec(`
   )
 `);
 db.pragma("foreign_keys = ON");
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS vacancies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT '',
+    schedule TEXT NOT NULL DEFAULT '',
+    salary TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    tasks TEXT NOT NULL DEFAULT '[]',
+    requirements TEXT NOT NULL DEFAULT '[]',
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+
+const vacancyCount = db.prepare("SELECT COUNT(*) AS count FROM vacancies").get().count;
+if (!vacancyCount) {
+  const seedVacancy = db.prepare(`INSERT INTO vacancies (slug,title,category,city,schedule,salary,description,tasks,requirements) VALUES (?,?,?,?,?,?,?,?,?)`);
+  const seed = db.transaction(() => {
+    for (const v of vacancies) seedVacancy.run(v.slug,v.title,v.category,v.city,v.schedule,v.salary,v.description,JSON.stringify(v.tasks||[]),JSON.stringify(v.requirements||[]));
+  });
+  seed();
+}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS employer_requests (
@@ -726,6 +753,56 @@ app.get("/api/applications/export.csv", requireAdmin, (req, res) => {
 
 // Public informational pages. Keep friendly URLs while preserving the existing
 // static assets and application endpoints.
+function vacancyRow(row) {
+  if (!row) return null;
+  return {...row, active: Boolean(row.active), tasks: JSON.parse(row.tasks || "[]"), requirements: JSON.parse(row.requirements || "[]")};
+}
+
+app.get("/api/vacancies", (_req,res) => {
+  const rows = db.prepare("SELECT * FROM vacancies WHERE active = 1 ORDER BY id DESC").all().map(vacancyRow);
+  res.json({vacancies: rows});
+});
+
+app.get("/api/admin/vacancies", requireAdmin, (_req,res) => {
+  res.json({vacancies: db.prepare("SELECT * FROM vacancies ORDER BY active DESC, id DESC").all().map(vacancyRow)});
+});
+
+function normalizeVacancyInput(body) {
+  const clean = (v,n) => String(v ?? "").trim().replace(/\s+/g," ").slice(0,n);
+  const list = v => Array.isArray(v) ? v.map(x=>clean(x,500)).filter(Boolean).slice(0,30) : String(v ?? "").split(/\r?\n/).map(x=>clean(x,500)).filter(Boolean).slice(0,30);
+  const title=clean(body.title,160), category=clean(body.category,100), city=clean(body.city,100), schedule=clean(body.schedule,80), salary=clean(body.salary,80), description=clean(body.description,2000);
+  let slug=clean(body.slug,180).toLowerCase().replace(/[^a-z0-9\-]+/g,"-").replace(/^-+|-+$/g,"");
+  if(!slug) slug=title.toLowerCase().replace(/[^a-zа-яё0-9\s-]+/gi,"").trim().replace(/[\s_]+/g,"-").replace(/-+/g,"-");
+  return {slug,title,category,city,schedule,salary,description,tasks:list(body.tasks),requirements:list(body.requirements),active:body.active===false||String(body.active)==="0"?0:1};
+}
+
+app.post("/api/admin/vacancies", requireAdmin, requireSameOrigin, (req,res)=>{
+  const v=normalizeVacancyInput(req.body||{});
+  if(!v.title||!v.slug||!v.description) return res.status(400).json({error:"Название, URL и описание обязательны."});
+  try {
+    const result=db.prepare(`INSERT INTO vacancies (slug,title,category,city,schedule,salary,description,tasks,requirements,active,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,datetime('now'))`).run(v.slug,v.title,v.category,v.city,v.schedule,v.salary,v.description,JSON.stringify(v.tasks),JSON.stringify(v.requirements),v.active);
+    res.status(201).json({vacancy:vacancyRow(db.prepare("SELECT * FROM vacancies WHERE id=?").get(result.lastInsertRowid))});
+  } catch(e) { res.status(409).json({error:e.code==="SQLITE_CONSTRAINT_UNIQUE"?"Такой URL уже используется.":"Не удалось создать вакансию."}); }
+});
+
+app.put("/api/admin/vacancies/:id", requireAdmin, requireSameOrigin, (req,res)=>{
+  const id=parsePositiveId(req.params.id); if(!id) return res.status(400).json({error:"Некорректный ID."});
+  const v=normalizeVacancyInput(req.body||{});
+  if(!v.title||!v.slug||!v.description) return res.status(400).json({error:"Название, URL и описание обязательны."});
+  try {
+    const result=db.prepare(`UPDATE vacancies SET slug=?,title=?,category=?,city=?,schedule=?,salary=?,description=?,tasks=?,requirements=?,active=?,updated_at=datetime('now') WHERE id=?`).run(v.slug,v.title,v.category,v.city,v.schedule,v.salary,v.description,JSON.stringify(v.tasks),JSON.stringify(v.requirements),v.active,id);
+    if(!result.changes) return res.status(404).json({error:"Вакансия не найдена."});
+    res.json({vacancy:vacancyRow(db.prepare("SELECT * FROM vacancies WHERE id=?").get(id))});
+  } catch(e) { res.status(409).json({error:e.code==="SQLITE_CONSTRAINT_UNIQUE"?"Такой URL уже используется.":"Не удалось сохранить вакансию."}); }
+});
+
+app.delete("/api/admin/vacancies/:id", requireAdmin, requireSameOrigin, (req,res)=>{
+  const id=parsePositiveId(req.params.id); if(!id) return res.status(400).json({error:"Некорректный ID."});
+  const result=db.prepare("DELETE FROM vacancies WHERE id=?").run(id);
+  if(!result.changes) return res.status(404).json({error:"Вакансия не найдена."});
+  res.status(204).end();
+});
+
 app.get("/about", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "about.html"));
 });
@@ -739,7 +816,7 @@ app.get("/employers", (_req, res) => {
 });
 
 app.get("/vacancies/:slug", (req, res) => {
-  const vacancy = vacancies.find((item) => item.slug === req.params.slug);
+  const vacancy = vacancyRow(db.prepare("SELECT * FROM vacancies WHERE slug = ? AND active = 1").get(req.params.slug));
   if (!vacancy) return res.status(404).sendFile(path.join(__dirname, "public", "index.html"));
 
   const escapeHtml = (value) => String(value ?? "")

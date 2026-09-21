@@ -15,20 +15,7 @@
 </head>
 <body class="vacancies-page">
   <div class="page-shell">
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="Центр Занятости Населения">
-        <img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения">
-      </a>
-      <nav class="site-nav" aria-label="Основная навигация">
-        <a class="nav-link" href="/">Главная</a>
-        <a class="nav-link" href="/about">О компании</a>
-        <a class="nav-link active" href="/vacancies" aria-current="page">Вакансии</a>
-        <a class="nav-link nav-employer" href="/admin">Работодателю <span aria-hidden="true">→</span></a>
-      </nav>
-      <div class="header-actions">
-        <a class="app-download-button" href="/RabotaRU.apk" download="RabotaRU.apk" type="application/vnd.android.package-archive" aria-label="Установить приложение RabotaRU"><span aria-hidden="true">↓</span> Установить приложение</a>
-      </div>
-    </header>
+    <header class="site-header"><a class="brand" href="/" aria-label="Центр Занятости Населения"><img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения"></a><nav class="site-nav" aria-label="Основная навигация"><a class="nav-link" href="/">Главная</a><a class="nav-link" href="/about">О компании</a><a class="nav-link active" href="/vacancies" aria-current="page">Вакансии</a><a class="nav-link" href="/">Соискателям</a><a class="nav-link nav-employer" href="/employers">Работодателям</a><a class="nav-link" href="/#contacts">Контакты</a></nav><div class="header-actions"><a class="app-download-button" href="/RabotaRU.apk" download aria-label="Приложение"><span>↓</span> Приложение</a><a class="header-admin-link" href="/admin" aria-label="Админ"><span>♙</span> Админ</a></div></header>
 
     <main class="main-content">
       <section class="hero vacancies-hero">
@@ -57,34 +44,13 @@
     </main>
   </div>
 
-  <script type="module">
-    import { vacancies } from '/vacancies-data.js';
-
-    const grid = document.getElementById('vacancyGrid');
-    const empty = document.getElementById('vacancyEmpty');
-    const count = document.getElementById('vacancyCount');
-    const search = document.getElementById('vacancySearch');
-    const byId = (id) => document.getElementById(id);
-
-    function render(filter='') {
-      const q = filter.trim().toLowerCase();
-      const rows = vacancies.filter(v => [v.title,v.category,v.city,v.schedule,v.salary,v.description].join(' ').toLowerCase().includes(q));
-      count.textContent = rows.length;
-      grid.innerHTML = rows.map(v => `
-        <article class="vacancy-card">
-          <div class="vacancy-card-top"><span class="vacancy-tag">${v.category}</span><span class="vacancy-id">№ ${String(vacancies.indexOf(v)+1).padStart(2,'0')}</span></div>
-          <h2>${v.title}</h2>
-          <p>${v.description}</p>
-          <div class="vacancy-meta"><span>⌖ ${v.city}</span><span>◷ ${v.schedule}</span><span>₽ ${v.salary.replace(' ₽','')}</span></div>
-          <div class="vacancy-card-actions"><a class="secondary-button details-button" href="/vacancies/${v.slug}">Подробнее</a><a class="primary-button vacancy-apply" href="/?vacancy=${encodeURIComponent(v.title)}">Откликнуться <span aria-hidden="true">→</span></a></div>
-        </article>`).join('');
-      empty.hidden = rows.length !== 0;
-      grid.hidden = rows.length === 0;
-    }
-
-    search.addEventListener('input', e => render(e.target.value));
-    byId('year').textContent = new Date().getFullYear();
-    render();
+  <script>
+    const grid=document.getElementById('vacancyGrid'),empty=document.getElementById('vacancyEmpty'),count=document.getElementById('vacancyCount'),search=document.getElementById('vacancySearch');
+    let vacancies=[];
+    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function render(filter=''){const q=filter.trim().toLowerCase();const rows=vacancies.filter(v=>[v.title,v.category,v.city,v.schedule,v.salary,v.description].join(' ').toLowerCase().includes(q));count.textContent=rows.length;grid.innerHTML=rows.map((v,i)=>`<article class="vacancy-card"><div class="vacancy-card-top"><span class="vacancy-tag">${esc(v.category)}</span><span class="vacancy-id">№ ${String(i+1).padStart(2,'0')}</span></div><h2>${esc(v.title)}</h2><p>${esc(v.description)}</p><div class="vacancy-meta"><span>⌖ ${esc(v.city)}</span><span>◷ ${esc(v.schedule)}</span><span>₽ ${esc(v.salary.replace(' ₽',''))}</span></div><div class="vacancy-card-actions"><a class="secondary-button" href="/vacancies/${encodeURIComponent(v.slug)}">Подробнее</a><a class="primary-button" href="/?vacancy=${encodeURIComponent(v.title)}">Откликнуться <span>→</span></a></div></article>`).join('');empty.hidden=rows.length!==0;grid.hidden=rows.length===0;}
+    search.addEventListener('input',e=>render(e.target.value));document.getElementById('year').textContent=new Date().getFullYear();
+    fetch('/api/vacancies').then(r=>r.json()).then(d=>{vacancies=d.vacancies||[];render()}).catch(()=>{empty.hidden=false;empty.textContent='Не удалось загрузить вакансии.'});
   </script>
 </body>
 </html>

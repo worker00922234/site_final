@@ -464,27 +464,18 @@ button, .primary-button, .login-button, .refresh-button, .export-button,
 }
 
 </style>
-</head>
+<style id="redesign-index-overrides">
+.brand-logo{display:block;width:245px!important;height:69px!important;max-height:69px!important;object-fit:contain;object-position:left center}.site-header{width:min(1320px,calc(100% - 64px));height:88px}.site-nav{display:flex;align-items:center;gap:2px;margin-left:auto;margin-right:12px}.nav-link{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:10px 14px;border-radius:10px;color:#193b67;text-decoration:none;font-size:13px;font-weight:800}.nav-link.active{color:#0758b5}.nav-link.active:after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:3px;border-radius:99px;background:#0758b5}.nav-link:hover{color:#0758b5;background:#eef6ff}.header-admin-link{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:10px 15px;border:1px solid #a9c8ea;border-radius:12px;background:#fff;color:#0b4f9f;text-decoration:none;font-size:12px;font-weight:800}.main-content{width:min(1240px,calc(100% - 64px));padding-top:58px}.home-hero{position:relative;min-height:330px;max-width:none}.home-hero .hero-copy{max-width:720px;position:relative;z-index:2}.home-hero .hero-visual{display:block;position:absolute;right:0;top:0;width:370px;height:235px;border-radius:28px;background:linear-gradient(145deg,#dff0ff,#fff);border:1px solid #cfe2f4;box-shadow:0 30px 80px rgba(19,83,145,.12);overflow:hidden}.hero-visual:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-20px;top:-40px;background:#0b66cf}.hero-visual:after{content:"";position:absolute;width:240px;height:18px;left:-30px;bottom:44px;background:#ed2638;transform:rotate(-10deg)}.hero-visual-label{position:absolute;left:25px;top:26px;color:#0758b5;font-weight:900;font-size:14px;letter-spacing:.1em}.hero-visual-number{position:absolute;left:24px;top:67px;color:#0b438b;font-size:72px;font-weight:900;letter-spacing:-.08em}.hero-visual-caption{position:absolute;left:29px;bottom:27px;color:#61718b;font-size:11px;font-weight:800}.home-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}.home-card{display:flex;align-items:center;gap:15px;padding:22px;border:1px solid #dbe8f5;border-radius:20px;background:#fff;box-shadow:0 12px 38px rgba(13,65,125,.07);text-decoration:none}.home-card-icon{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:#0b66cf;color:#fff;font-size:23px;flex:0 0 auto}.home-card b{display:block;color:#0b438b;font-size:16px;margin-bottom:5px}.home-card span{display:block;color:#6c7d94;font-size:12px;line-height:1.5}.home-card-arrow{margin-left:auto;color:#0758b5;font-size:22px}.home-info{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.home-info-card{padding:28px;border:1px solid #dbe8f5;border-radius:24px;background:#fff;box-shadow:0 18px 55px rgba(13,65,125,.08)}.home-info-card h2{margin:0 0 10px;color:#0b438b}.home-info-card p{color:#61718b;line-height:1.7;margin:0}@media(max-width:760px){.site-header{width:calc(100% - 24px);height:auto;min-height:72px;flex-wrap:wrap}.brand-logo{width:190px!important;height:54px!important;max-height:54px!important}.site-nav{order:3;width:100%;justify-content:space-between;overflow:auto;margin:0}.nav-link{font-size:11px;padding:8px 7px;white-space:nowrap}.nav-link:nth-child(4),.nav-link:nth-child(5){display:none}.header-admin-link{font-size:0;width:44px;justify-content:center;padding:8px}.header-admin-link span{font-size:17px}.main-content{width:calc(100% - 24px);padding-top:36px}.home-hero{min-height:0}.home-hero .hero-visual{display:none}.home-cards,.home-info{grid-template-columns:1fr}}
+</style></head>
 <body>
   <div class="page-shell">
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="Центр Занятости Населения">
-        <img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения">
-      </a>
-      <nav class="site-nav" aria-label="Основная навигация">
-        <a class="nav-link active" href="/" aria-current="page">Главная</a>
-        <a class="nav-link" href="/about">О компании</a>
-        <a class="nav-link" href="/vacancies">Вакансии</a>
-        <a class="nav-link nav-employer" href="/admin">Работодателю <span aria-hidden="true">→</span></a>
-      </nav>
-      <div class="header-actions">
-        <a class="app-download-button" href="/RabotaRU.apk" download="RabotaRU.apk" type="application/vnd.android.package-archive" aria-label="Установить приложение RabotaRU">
-          <span aria-hidden="true">↓</span> Установить приложение
-        </a>
-      </div>
-    </header>
+    <header class="site-header"><a class="brand" href="/" aria-label="Центр Занятости Населения"><img class="brand-logo" src="/assets/czn-logo-transparent.png" alt="ЦЗН — Центр Занятости Населения"></a><nav class="site-nav" aria-label="Основная навигация"><a class="nav-link active" href="/" aria-current="page">Главная</a><a class="nav-link" href="/about">О компании</a><a class="nav-link" href="/vacancies">Вакансии</a><a class="nav-link" href="#application">Соискателям</a><a class="nav-link" href="/employers">Работодателям</a><a class="nav-link" href="#contacts">Контакты</a></nav><div class="header-actions"><a class="app-download-button" href="/RabotaRU.apk" download><span>↓</span> Приложение</a><a class="header-admin-link" href="/admin" aria-label="Админ"><span>♙</span> Админ</a></div></header>
 
     <main class="main-content">
+      <section class="hero home-hero"><div class="hero-copy"><div class="eyebrow"><span></span> Центр занятости населения</div><h1>ЦЗН — <em>о людях и работе.</em></h1><p>Мы создаём удобный путь от первого отклика до подходящего предложения, помогая соискателям и работодателям быстрее находить точки пересечения.</p></div><div class="hero-visual" aria-hidden="true"><span class="hero-visual-label">Центр занятости</span><strong class="hero-visual-number">ЦЗН</strong><span class="hero-visual-caption">Работа начинается с подходящей возможности</span></div></section>
+      <section class="home-cards" aria-label="Разделы"><a class="home-card" href="#application"><span class="home-card-icon">●</span><span><b>Для соискателей</b><span>Заполните анкету и расскажите о своём опыте.</span></span><span class="home-card-arrow">→</span></a><a class="home-card" href="/employers"><span class="home-card-icon">▦</span><span><b>Для работодателей</b><span>Оставьте заявку на подбор сотрудников.</span></span><span class="home-card-arrow">→</span></a><a class="home-card" href="/vacancies"><span class="home-card-icon">▤</span><span><b>Актуальные вакансии</b><span>Выберите подходящее предложение и откликнитесь.</span></span><span class="home-card-arrow">→</span></a></section>
+      <section class="home-info" id="contacts"><div class="home-info-card"><p class="section-kicker">01 / ЦЗН</p><h2>Помогаем найти точки пересечения</h2><p>Собираем информацию о кандидатах, помогаем сориентироваться в предложениях и даём работодателям удобный канал для подбора сотрудников.</p></div><div class="home-info-card"><p class="section-kicker">02 / Следующий шаг</p><h2>Выберите направление</h2><p>Посмотрите вакансии, заполните анкету или расскажите о своей потребности в сотрудниках — всё остальное можно обсудить со специалистом ЦЗН.</p></div></section>
+      <div id="application">
       <section class="hero">
         <div class="eyebrow"><span></span> Открытая вакансия</div>
         <h1>Расскажите о себе —<br><em>мы свяжемся с вами.</em></h1>
@@ -648,6 +639,7 @@ button, .primary-button, .login-button, .refresh-button, .export-button,
         </div>
       </section>
 
+      </div>
       <footer class="site-footer"><span>Спасибо за интерес к нашей команде.</span><span>© <span id="year"></span></span></footer>
     </main>
   </div>
