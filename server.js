@@ -100,6 +100,15 @@ db.exec(`
   );
 `);
 
+
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS telegram_chat_links (
+    telegram_message_id INTEGER PRIMARY KEY,
+    target_type TEXT NOT NULL,
+    target_id INTEGER NOT NULL
+  )
+`);
 db.exec(`
   CREATE TABLE IF NOT EXISTS vacancies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -623,6 +632,34 @@ function getPublicChatSession(token) {
   return db.prepare("SELECT id, chat_token FROM public_chat_sessions WHERE chat_token = ?").get(cleanToken) || null;
 }
 
+
+async function startTelegramReplyListener(){
+  if(!TELEGRAM_BOT_TOKEN) return;
+  let offset=0;
+  async function poll(){
+    try{
+      const r=await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?timeout=25&offset=${offset}`);
+      const d=await r.json();
+      if(d.ok){
+        for(const u of d.result){
+          offset=u.update_id+1;
+          const msg=u.message;
+          if(!msg?.reply_to_message?.message_id || !msg.text) continue;
+          const link=db.prepare('SELECT target_type,target_id FROM telegram_chat_links WHERE telegram_message_id=?').get(msg.reply_to_message.message_id);
+          if(!link) continue;
+          const text=cleanChatMessage(msg.text);
+          if(link.target_type==='public'){
+            db.prepare("INSERT INTO public_chat_messages (chat_session_id,sender,message) VALUES (?, 'admin', ?)").run(link.target_id,text);
+            db.prepare("UPDATE public_chat_sessions SET last_message_at=datetime('now') WHERE id=?").run(link.target_id);
+          }
+        }
+      }
+    }catch(e){ console.error('Telegram listener:',e.message); }
+    setImmediate(poll);
+  }
+  poll();
+}
+
 async function notifyAdminViaTelegramPublicChat({ chatId, message }) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
     console.warn("Telegram notifications are disabled: set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID.");
@@ -652,6 +689,7 @@ async function notifyAdminViaTelegramPublicChat({ chatId, message }) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) console.error("Public chat Telegram notification failed:", data?.description || response.statusText);
+    if (data.ok) db.prepare("INSERT OR REPLACE INTO telegram_chat_links (telegram_message_id,target_type,target_id) VALUES (?,?,?)").run(data.result.message_id,"public",chatId);
   } catch (error) {
     console.error("Public chat Telegram notification error:", error.message);
   }
@@ -978,6 +1016,8 @@ app.get("/admin", (req, res) => {
 });
 
 const HOST = process.env.HOST || "0.0.0.0";
+
+startTelegramReplyListener();
 
 app.listen(PORT, HOST, () => {
   console.log(`Backend listening on http://${HOST}:${PORT}`);
