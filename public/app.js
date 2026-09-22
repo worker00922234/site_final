@@ -309,3 +309,124 @@ chatForm?.addEventListener("submit", async (event) => {
 });
 document.querySelector("#telegramContact")?.setAttribute("href", TELEGRAM_URL);
 if (candidateChatToken && document.querySelector("#successState")?.hidden === false) initCandidateChat(candidateChatToken);
+// Public home-page chat ----------------------------------------------------
+const publicChatPanel = document.querySelector("#siteChat");
+const publicChatMessages = document.querySelector("#publicChatMessages");
+const publicChatForm = document.querySelector("#publicChatForm");
+const publicChatInput = document.querySelector("#publicChatInput");
+const publicChatStatus = document.querySelector("#publicChatStatus");
+const PUBLIC_CHAT_STORAGE_KEY = "czn_public_chat_token";
+let publicChatToken = localStorage.getItem(PUBLIC_CHAT_STORAGE_KEY) || "";
+let lastPublicChatMessageId = 0;
+let publicChatTimer = null;
+
+function renderPublicChatMessages(rows, append = false) {
+  if (!publicChatMessages) return;
+  const html = rows.map((m) => `<div class="chat-message ${m.sender === "visitor" ? "mine" : "admin-message"}><div class="chat-bubble">${escapeChatHtml(m.message).replace(/\n/g,"<br>")}</div><time>${chatTime(m.created_at)}</time></div>`).join("");
+  if (append) publicChatMessages.insertAdjacentHTML("beforeend", html);
+  else publicChatMessages.innerHTML = html || '<div class="chat-empty">Напишите нам — администратор ответит здесь.</div>';
+  if (rows.length) lastPublicChatMessageId = Math.max(lastPublicChatMessageId, ...rows.map((m) => Number(m.id) || 0));
+  publicChatMessages.scrollTop = publicChatMessages.scrollHeight;
+}
+
+async function ensurePublicChatSession() {
+  if (publicChatToken) return publicChatToken;
+  const response = await fetch("/api/public-chat/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.chatToken) throw new Error(data.error || "Не удалось открыть чат.");
+  publicChatToken = data.chatToken;
+  localStorage.setItem(PUBLIC_CHAT_STORAGE_KEY, publicChatToken);
+  return publicChatToken;
+}
+
+async function loadPublicChat() {
+  if (!publicChatToken || !publicChatPanel) return;
+  try {
+    const response = await fetch(`/api/public-chat/messages?after=${encodeURIComponent(lastPublicChatMessageId)}`, { headers: { "X-Chat-Token": publicChatToken } });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem(PUBLIC_CHAT_STORAGE_KEY);
+        publicChatToken = "";
+      }
+      if (publicChatStatus) publicChatStatus.textContent = data.error || "Чат недоступен";
+      return;
+    }
+    if (Array.isArray(data.messages) && data.messages.length) renderPublicChatMessages(data.messages, lastPublicChatMessageId > 0);
+    if (publicChatStatus) publicChatStatus.textContent = "Чат открыт";
+  } catch {
+    if (publicChatStatus) publicChatStatus.textContent = "Не удалось обновить чат";
+  }
+}
+
+async function openPublicChat() {
+  if (!publicChatPanel) return;
+  publicChatPanel.hidden = false;
+  publicChatPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  try {
+    await ensurePublicChatSession();
+    await loadPublicChat();
+    if (publicChatTimer) clearInterval(publicChatTimer);
+    publicChatTimer = setInterval(loadPublicChat, 4000);
+    setTimeout(() => publicChatInput?.focus(), 350);
+  } catch (error) {
+    if (publicChatStatus) publicChatStatus.textContent = error.message;
+  }
+}
+
+document.querySelectorAll("[data-open-site-chat]").forEach((button) => {
+  button.addEventListener("click", openPublicChat);
+});
+
+document.querySelectorAll("a[href='#siteChat']").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    openPublicChat();
+  });
+});
+
+document.querySelector("[data-download-app]")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const link = document.createElement("a");
+  link.href = "/RabotaRU.apk";
+  link.download = "RabotaRU.apk";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+});
+
+publicChatForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const message = String(publicChatInput?.value || "").trim();
+  if (!message) return;
+  try {
+    await ensurePublicChatSession();
+    const button = publicChatForm.querySelector("button[type=submit]");
+    if (button) button.disabled = true;
+    const response = await fetch("/api/public-chat/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Chat-Token": publicChatToken },
+      body: JSON.stringify({ message })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Не удалось отправить сообщение.");
+    if (publicChatInput) publicChatInput.value = "";
+    renderPublicChatMessages([data], true);
+    if (publicChatStatus) publicChatStatus.textContent = "Сообщение отправлено";
+    if (button) button.disabled = false;
+  } catch (error) {
+    if (publicChatStatus) publicChatStatus.textContent = error.message;
+    const button = publicChatForm.querySelector("button[type=submit]");
+    if (button) button.disabled = false;
+  }
+});
+document.querySelector("[data-download-app]")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    event.currentTarget.click();
+  }
+});
+if (window.location.hash === "#siteChat" && publicChatPanel) {
+  setTimeout(openPublicChat, 0);
+}

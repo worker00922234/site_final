@@ -15,11 +15,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
-const APP_VERSION = "2.0.0-czn-redesign-vacancy-admin";
+const APP_VERSION = "2.1.0-czn-home-chat";
 const TELEGRAM_BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
 const TELEGRAM_ADMIN_CHAT_ID = String(process.env.TELEGRAM_ADMIN_CHAT_ID || "").trim();
 const PUBLIC_SITE_URL = String(process.env.PUBLIC_SITE_URL || "").trim().replace(/\/$/, "");
 const TELEGRAM_CHAT_REPLY_SECRET = String(process.env.TELEGRAM_CHAT_REPLY_SECRET || "").trim();
+const PUBLIC_CHAT_REPLY_OFFSET = 1000000000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 if (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 12) {
@@ -79,6 +80,25 @@ db.exec(`
   )
 `);
 db.pragma("foreign_keys = ON");
+
+// Public website chat. Unlike the application chat, this conversation can be
+// started directly from the home page without submitting an application.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS public_chat_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_token TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_message_at TEXT
+  );
+  CREATE TABLE IF NOT EXISTS public_chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_session_id INTEGER NOT NULL,
+    sender TEXT NOT NULL CHECK(sender IN ('visitor','admin')),
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY(chat_session_id) REFERENCES public_chat_sessions(id) ON DELETE CASCADE
+  );
+`);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS vacancies (
@@ -589,14 +609,117 @@ function escapeTelegramHtml(value) {
   return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function createPublicChatToken() {
+  let token = "";
+  do {
+    token = crypto.randomBytes(32).toString("hex");
+  } while (db.prepare("SELECT 1 FROM public_chat_sessions WHERE chat_token = ?").get(token));
+  return token;
+}
+
+function getPublicChatSession(token) {
+  const cleanToken = String(token || "").trim();
+  if (!/^[a-f0-9]{64}$/.test(cleanToken)) return null;
+  return db.prepare("SELECT id, chat_token FROM public_chat_sessions WHERE chat_token = ?").get(cleanToken) || null;
+}
+
+async function notifyAdminViaTelegramPublicChat({ chatId, message }) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
+    console.warn("Telegram notifications are disabled: set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID.");
+    return;
+  }
+  const safeMessage = String(message || "").slice(0, 2000);
+  const payload = {
+    chat_id: TELEGRAM_ADMIN_CHAT_ID,
+    text: [
+      "💬 <b>Новое сообщение с сайта</b>",
+      `🆔 Чат №${chatId}`,
+      `📝 ${escapeTelegramHtml(safeMessage)}`,
+      "💬 Нажмите «↩️ Ответить», чтобы ответить посетителю прямо из Telegram."
+    ].join("\n"),
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+    reply_markup: {
+      inline_keyboard: [[{ text: "↩️ Ответить", callback_data: `candidate_reply:${PUBLIC_CHAT_REPLY_OFFSET + chatId}` }]]
+    }
+  };
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) console.error("Public chat Telegram notification failed:", data?.description || response.statusText);
+  } catch (error) {
+    console.error("Public chat Telegram notification error:", error.message);
+  }
+}
+
+// Public website chat API --------------------------------------------------
+app.post("/api/public-chat/session", chatPostLimiter, requireSameOrigin, (req, res) => {
+  const token = createPublicChatToken();
+  const result = db.prepare("INSERT INTO public_chat_sessions (chat_token) VALUES (?)").run(token);
+  res.status(201).json({ id: Number(result.lastInsertRowid), chatToken: token });
+});
+
+app.get("/api/public-chat/messages", (req, res) => {
+  const chat = getPublicChatSession(req.get("x-chat-token"));
+  if (!chat) return res.status(401).json({ error: "Чат недоступен." });
+  const after = Number(req.query.after || 0);
+  const rows = Number.isInteger(after) && after > 0
+    ? db.prepare("SELECT id, sender, message, created_at FROM public_chat_messages WHERE chat_session_id = ? AND id > ? ORDER BY id ASC LIMIT 200").all(chat.id, after)
+    : db.prepare("SELECT id, sender, message, created_at FROM public_chat_messages WHERE chat_session_id = ? ORDER BY id ASC LIMIT 200").all(chat.id);
+  res.json({ chat: { id: chat.id }, messages: rows });
+});
+
+app.post("/api/public-chat/messages", chatPostLimiter, requireSameOrigin, (req, res) => {
+  const chat = getPublicChatSession(req.get("x-chat-token"));
+  if (!chat) return res.status(401).json({ error: "Чат недоступен." });
+  const message = cleanChatMessage(req.body?.message);
+  if (!message) return res.status(400).json({ error: "Введите сообщение." });
+  const result = db.prepare("INSERT INTO public_chat_messages (chat_session_id, sender, message) VALUES (?, 'visitor', ?)").run(chat.id, message);
+  db.prepare("UPDATE public_chat_sessions SET last_message_at = datetime('now') WHERE id = ?").run(chat.id);
+  const row = db.prepare("SELECT id, sender, message, created_at FROM public_chat_messages WHERE id = ?").get(result.lastInsertRowid);
+  void notifyAdminViaTelegramPublicChat({ chatId: chat.id, message });
+  res.status(201).json(row);
+});
+
 app.post("/api/internal/chat/admin-reply", (req, res) => {
   if (!TELEGRAM_CHAT_REPLY_SECRET) return res.status(503).json({ error: "Telegram reply integration is not configured." });
   const provided = Buffer.from(String(req.get("x-czn-bot-secret") || ""));
   const expected = Buffer.from(TELEGRAM_CHAT_REPLY_SECRET);
   if (provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) return res.status(401).json({ error: "Недействительный ключ интеграции." });
-  const applicationId = parsePositiveId(req.body?.applicationId);
   const message = cleanChatMessage(req.body?.message);
-  if (!applicationId || !message) return res.status(400).json({ error: "Нужны applicationId и message." });
+  const publicChatId = parsePositiveId(req.body?.publicChatId);
+  const applicationId = parsePositiveId(req.body?.applicationId);
+  if (!message) return res.status(400).json({ error: "Нужно message." });
+
+  if (publicChatId) {
+    const chat = db.prepare("SELECT id FROM public_chat_sessions WHERE id = ?").get(publicChatId);
+    if (!chat) return res.status(404).json({ error: "Чат не найден." });
+    const result = db.prepare("INSERT INTO public_chat_messages (chat_session_id, sender, message) VALUES (?, 'admin', ?)").run(publicChatId, message);
+    db.prepare("UPDATE public_chat_sessions SET last_message_at = datetime('now') WHERE id = ?").run(publicChatId);
+    const row = db.prepare("SELECT id, sender, message, created_at FROM public_chat_messages WHERE id = ?").get(result.lastInsertRowid);
+    return res.status(201).json(row);
+  }
+
+  if (!applicationId) return res.status(400).json({ error: "Нужен applicationId или publicChatId." });
+
+  // Compatibility with the existing Telegram bot: public chat IDs are encoded
+  // into the same candidate_reply callback format, so the bot does not need a
+  // separate callback type.
+  if (applicationId >= PUBLIC_CHAT_REPLY_OFFSET) {
+    const publicChatId = applicationId - PUBLIC_CHAT_REPLY_OFFSET;
+    const chat = db.prepare("SELECT id FROM public_chat_sessions WHERE id = ?").get(publicChatId);
+    if (!chat) return res.status(404).json({ error: "Чат не найден." });
+    const result = db.prepare("INSERT INTO public_chat_messages (chat_session_id, sender, message) VALUES (?, 'admin', ?)").run(publicChatId, message);
+    db.prepare("UPDATE public_chat_sessions SET last_message_at = datetime('now') WHERE id = ?").run(publicChatId);
+    const row = db.prepare("SELECT id, sender, message, created_at FROM public_chat_messages WHERE id = ?").get(result.lastInsertRowid);
+    return res.status(201).json(row);
+  }
+
   const application = db.prepare("SELECT id FROM applications WHERE id = ?").get(applicationId);
   if (!application) return res.status(404).json({ error: "Анкета не найдена." });
   const result = db.prepare("INSERT INTO chat_messages (application_id, sender, message) VALUES (?, 'admin', ?)").run(applicationId, message);
