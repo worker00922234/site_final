@@ -389,8 +389,8 @@ document.querySelector("[data-download-app]")?.addEventListener("click", (event)
   event.preventDefault();
   event.stopPropagation();
   const link = document.createElement("a");
-  link.href = "/RabotaRU.apk";
-  link.download = "RabotaRU.apk";
+  link.href = event.currentTarget.getAttribute("href") || "/RabotaRU.apk";
+  link.download = event.currentTarget.getAttribute("download") || "RabotaRU.apk";
   document.body.appendChild(link);
   link.click();
   link.remove();
